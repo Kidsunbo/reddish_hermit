@@ -1,0 +1,6 @@
+{
+    "python.formatting.provider": "black",
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE":"build/generators/conan_toolchain.cmake"
+    }
+}

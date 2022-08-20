@@ -1,0 +1,6 @@
+#ifndef REDDISH_HERMIT_REDIS_H
+#define REDDISH_HERMIT_REDIS_H
+
+
+
+#endif

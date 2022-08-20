@@ -1,0 +1,7 @@
+#ifndef REDDISH_HERMIT_PROTO_READ_H
+#define REDDISH_HERMIT_PROTO_READ_H
+
+
+
+
+#endif
