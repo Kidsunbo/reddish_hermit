@@ -22,7 +22,7 @@ jobs:
     - name: Configure and build
       working-directory: ${{github.workspace}}
       shell: bash
-      run: chmod 777 ./script/build.sh && ./script/build.sh $GITHUB_WORKSPACE $BUILD_TYPE
+      run: chmod 777 ./build.sh && ./build.sh $GITHUB_WORKSPACE $BUILD_TYPE
 
     - name: Test
       working-directory: ${{github.workspace}}/build
