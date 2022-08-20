@@ -1,0 +1,9 @@
+extraction:
+  cpp:
+     prepare:
+        packages: 
+          - python3
+     configure:
+        command:
+        - chmod 777 ./script/build.sh
+        - ./script/build.sh
