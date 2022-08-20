@@ -34,6 +34,7 @@ class ReddishHermitConan(ConanFile):
 
     def configure(self):
         self.options["kie_toolbox"].with_context = True
+        self.options["kie_toolbox"].enable_test = False
 
     def requirements(self):
         self.requires("kie_toolbox/0.1.1")
