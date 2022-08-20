@@ -5,5 +5,7 @@ extraction:
           - python3
      configure:
         command:
+        - pwd
+        - ls
         - chmod 777 ./script/build.sh
         - ./script/build.sh
