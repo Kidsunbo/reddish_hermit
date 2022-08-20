@@ -16,6 +16,7 @@ target_link_libraries(reddish_hermit PUBLIC kie_toolbox::kie_toolbox)
 
 
 if(ENABLE_TEST)
+    include(CTest)
     add_subdirectory(test)
 endif()
 
