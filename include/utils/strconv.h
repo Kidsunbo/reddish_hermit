@@ -1,7 +1,0 @@
-#ifndef REDDISH_HERMIT_UTILS_STRCONV_H
-#define REDDISH_HERMIT_UTILS_STRCONV_H
-
-
-
-
-#endif

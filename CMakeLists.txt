@@ -4,7 +4,7 @@ project(reddish_hermit CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(ENABLE_TEST "if enable test for reddish_hermit" ON)
+option(ENABLE_TEST "if enable test for reddish_hermit" OFF)
 if(ENABLE_TEST)
     include(CTest)
     add_subdirectory(test)

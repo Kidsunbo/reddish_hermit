@@ -19,8 +19,14 @@ class ReddishHermitConan(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "with_ssl": [True, False],
+        "enable_test": [True, False],
     }
-    default_options = {"shared": False, "fPIC": True, "with_ssl": False}
+    default_options = {
+        "shared": False,
+        "fPIC": True,
+        "with_ssl": False,
+        "enable_test": True,
+    }
 
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*", "include/*", "LICENSE"
@@ -41,8 +47,13 @@ class ReddishHermitConan(ConanFile):
         if self.options.with_ssl:
             self.requires("openssl/3.0.5")
 
+    def build_requirements(self):
+        if self.options.enable_test:
+            self.test_requires("gtest/cci.20210126")
+
     def _configurate(self, tc):
         tc.variables["WITH_SSL"] = self.options.with_ssl
+        tc.variables["ENABLE_TEST"] = self.options.enable_test
 
     def generate(self):
         tc = CMakeToolchain(self)
