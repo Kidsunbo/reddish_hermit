@@ -1,4 +1,5 @@
 aux_source_directory(. SRC)
 aux_source_directory(proto PROTO)
 aux_source_directory(utils UTILS)
-target_sources(reddish_hermit PRIVATE ${SRC} ${PROTO} ${UTILS})
+aux_source_directory(network NETWORK)
+target_sources(reddish_hermit PRIVATE ${SRC} ${PROTO} ${UTILS} ${NETWORK})
