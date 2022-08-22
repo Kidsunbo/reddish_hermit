@@ -4,6 +4,7 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Kidsunbo/reddish_hermit/CMake?label=Build&logo=CMake&style=flat-square)](https://github.com/Kidsunbo/reddish_hermit/actions/workflows/cmake.yml)
 [![C++](https://img.shields.io/badge/C%2B%2B-20-brightgreen?style=flat-square&logo=cplusplus)](https://isocpp.org)
+[![Codecov](https://img.shields.io/codecov/c/github/Kidsunbo/reddish_hermit?logo=codecov&style=flat-square)](https://codecov.io/gh/Kidsunbo/reddish_hermit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 
