@@ -4,13 +4,6 @@ project(reddish_hermit CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(ENABLE_TEST "if enable test for reddish_hermit" OFF)
-if(ENABLE_TEST)
-    include(CTest)
-    add_subdirectory(test)
-endif()
-
-
 find_package(kie_toolbox REQUIRED)
 
 add_library(reddish_hermit)
@@ -18,6 +11,14 @@ add_subdirectory(src)
 target_include_directories(reddish_hermit PUBLIC include)
 target_link_libraries(reddish_hermit PUBLIC kie_toolbox::kie_toolbox)
 
+
+option(ENABLE_TEST "if enable test for reddish_hermit" OFF)
+if(ENABLE_TEST)
+    include(CTest)
+    add_subdirectory(test)
+    target_compile_options(reddish_hermit PRIVATE -fsanitize=address -g --coverage -Wall -Wextra -Werror)
+    target_link_options(reddish_hermit PRIVATE -fsanitize=address --coverage)
+endif()
 
 
 install(TARGETS reddish_hermit)
