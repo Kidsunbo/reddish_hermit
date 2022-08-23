@@ -67,6 +67,7 @@ boost::asio::awaitable<void> co_main()
     auto ctx = co_await boost::asio::this_coro::executor;
 
     Connection conn(ctx, 5);
+    Connection conn_without_timeout(ctx);
 
     std::vector<std::string> vec = {
         "github.com",
@@ -78,6 +79,11 @@ boost::asio::awaitable<void> co_main()
     };
     for(auto& item : vec){
         auto s = co_await get(conn, item);
+        std::cout<<s<<std::endl;
+    }
+
+    for(auto& item : vec){
+        auto s = co_await get(conn_without_timeout, item);
         std::cout<<s<<std::endl;
     }
 }
