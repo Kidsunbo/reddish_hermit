@@ -1,8 +1,5 @@
 #include "network/connection.h"
 
-#include <utils/timer.h>
-#include <utils/default.h>
-
 #include <boost/asio/experimental/awaitable_operators.hpp>
 
 namespace net = boost::asio;
@@ -165,8 +162,18 @@ namespace reddish::network
 
     boost::system::error_code Connection::close(){
         boost::system::error_code ec;
+        sock.shutdown(net::ip::tcp::socket::shutdown_both, ec);
+        if(ec){
+            return ec;
+        }
         sock.close(ec);
         return ec;
+    }
+
+    Connection::~Connection()noexcept{
+        if(sock.is_open()){
+            static_cast<void>(close());
+        }
     }
 
 } // namespace reddish::network

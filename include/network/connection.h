@@ -19,13 +19,15 @@ namespace reddish::network
         public:
         explicit Connection(boost::asio::any_io_executor& ctx, int timeout=0);
 
-        Result<boost::asio::ip::tcp::endpoint> connect_with_host_name(std::string_view host, unsigned short port);
-        Result<boost::asio::ip::tcp::endpoint> connect_with_ip(const std::string& ip, unsigned short port);
-        Result<std::size_t> write(std::string_view value);
-        Result<std::size_t> read_until(Buffer& buf, std::string_view sep);
-        Result<std::size_t> read_exact(Buffer& buf, std::int64_t size);
-        bool is_connected();
-        boost::system::error_code close();
+        [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_host_name(std::string_view host, unsigned short port);
+        [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_ip(const std::string& ip, unsigned short port);
+        [[nodiscard]] Result<std::size_t> write(std::string_view value);
+        [[nodiscard]] Result<std::size_t> read_until(Buffer& buf, std::string_view sep);
+        [[nodiscard]] Result<std::size_t> read_exact(Buffer& buf, std::int64_t size);
+        [[nodiscard]] bool is_connected();
+        [[nodiscard]] boost::system::error_code close();
+
+        ~Connection()noexcept;
     };
 } // namespace reddish::network
 

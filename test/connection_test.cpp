@@ -1,10 +1,10 @@
 #include <network/connection.h>
 
-#include <utils/timer.h>
-
 #include <iostream>
 
 #include <boost/regex.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+using namespace boost::asio::experimental::awaitable_operators;
 
 using namespace reddish::network;
 
@@ -14,29 +14,28 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
     auto v = co_await conn.connect_with_host_name(host, 80);
     if (!v)
     {
-        std::cout << v.error() << std::endl;
+        std::cout <<"#error 1 "<<  v.error() << std::endl;
         co_return "";
     }
-    std::cout <<"#1 "<< v.value() << std::endl;
+    std::cout <<"#value 1 "<< v.value() << std::endl;
 
     auto ve = co_await conn.write("GET / HTTP/1.1\r\n\r\n");
     if (!ve)
     {
-        std::cout << ve.error().message() << std::endl;
+        std::cout <<"#error 2 "<<  ve.error().message() << std::endl;
         co_return "";
     }
-    std::cout << ve.value() << std::endl;
+    std::cout << "#value 2 "<< ve.value() << std::endl;
 
     std::string s;
     boost::asio::dynamic_string_buffer buf(s);
     ve = co_await conn.read_until(buf, "\r\n\r\n");
     if (!ve)
     {
-        std::cout << ve.error() << std::endl;
+        std::cout << "#error 3 " <<ve.error() << std::endl;
         co_return "";
     }
-    std::cout << ve.value() << std::endl;
-    std::cout << s << std::endl;
+    std::cout << "#value 3 "<< ve.value() << std::endl;
 
     std::size_t total_size = 0;
     boost::regex re("Content-Length: ([0-9]+)");
@@ -55,11 +54,10 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
     ve = co_await conn.read_exact(buf, total_size - s.length());
     if (!ve)
     {
-        std::cout << ve.error() << std::endl;
+        std::cout << "#error 4 "<< ve.error() << std::endl;
         co_return "";
     }
-    std::cout << ve.value() << std::endl;
-    std::cout << s << std::endl;
+    std::cout <<"#value 4 "<< ve.value() << std::endl;
     buf.consume(ve.value());
     co_return s;
 }
@@ -78,12 +76,9 @@ boost::asio::awaitable<void> co_main()
         "www.163.com",
 
     };
-
-    for (auto &item : vec)
-    {
+    for(auto& item : vec){
         auto s = co_await get(conn, item);
-        // std::cout<<s<<std::endl;
-        conn.close();
+        std::cout<<s<<std::endl;
     }
 }
 
