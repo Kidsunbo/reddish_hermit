@@ -1,4 +1,4 @@
-#include "proto/proto.h"
+#include "reddish/proto/proto.h"
 
 namespace reddish::proto
 {

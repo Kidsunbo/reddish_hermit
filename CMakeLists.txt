@@ -16,8 +16,8 @@ option(ENABLE_TEST "if enable test for reddish_hermit" OFF)
 if(ENABLE_TEST)
     include(CTest)
     add_subdirectory(test)
-    target_compile_options(reddish_hermit PRIVATE -fsanitize=address -g --coverage -Wall -Wextra -Werror)
-    target_link_options(reddish_hermit PRIVATE -fsanitize=address --coverage)
+    target_compile_options(reddish_hermit PUBLIC -fsanitize=address -g --coverage -Wall -Wextra -Werror)
+    target_link_options(reddish_hermit PUBLIC -fsanitize=address --coverage)
 endif()
 
 
