@@ -8,7 +8,7 @@
 namespace reddish::network
 {
     class Connection{
-        boost::asio::any_io_executor& ctx;
+        boost::asio::any_io_executor ctx;
         boost::asio::ip::tcp::socket sock;
         int timeout;
         boost::asio::steady_timer timer;
@@ -17,7 +17,10 @@ namespace reddish::network
         using Result = boost::asio::awaitable<boost::outcome_v2::result<T>>;
         using Buffer = boost::asio::dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>>;
         public:
-        explicit Connection(boost::asio::any_io_executor& ctx, int timeout=0);
+        explicit Connection(boost::asio::any_io_executor ctx, int timeout=0);
+        explicit Connection(boost::asio::io_context& ctx, int timeout=0);
+        explicit Connection(boost::asio::io_context&& ctx, int timeout=0);
+
 
         [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_host_name(std::string_view host, unsigned short port);
         [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_ip(const std::string& ip, unsigned short port);
