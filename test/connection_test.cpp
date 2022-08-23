@@ -1,4 +1,5 @@
 #include <reddish/network/connection.h>
+#include <kie/context/context.hpp>
 
 #include <iostream>
 
@@ -62,12 +63,14 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
     co_return s;
 }
 
-boost::asio::awaitable<void> co_main()
+boost::asio::awaitable<void> co_main(kie::context& ctx)
 {
-    auto ctx = co_await boost::asio::this_coro::executor;
-
-    Connection conn(ctx, 5);
-    Connection conn_without_timeout(ctx);
+    auto any_ctx = co_await boost::asio::this_coro::executor;
+    Connection conn(any_ctx, 5);
+    Connection conn_without_timeout(ctx.get_one());
+    auto& third_ctx = ctx.get_one();
+    Connection conn_dummy(third_ctx);
+    
 
     std::vector<std::string> vec = {
         "github.com",
@@ -86,12 +89,21 @@ boost::asio::awaitable<void> co_main()
         auto s = co_await get(conn_without_timeout, item);
         std::cout<<s<<std::endl;
     }
+
+    for(auto& item : vec){
+        auto s = co_await get(conn_dummy, item);
+        std::cout<<s<<std::endl;
+    }
 }
 
 int main()
 {
-    boost::asio::io_context ctx;
-    boost::asio::co_spawn(ctx, co_main(), boost::asio::detached);
+    kie::context ctx;
+    boost::asio::co_spawn(ctx.get_one(), co_main(ctx), boost::asio::detached);
+    std::thread([&]{
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        ctx.stop();
+    }).detach();
     ctx.run();
     return 0;
 }

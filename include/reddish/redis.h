@@ -10,7 +10,11 @@ namespace reddish
 
         public:
         RedisClient(boost::asio::any_io_executor& ctx, int timeout = 0);
+        RedisClient(boost::asio::io_context& ctx, int timeout = 0);
+        RedisClient(boost::asio::io_context&& ctx, int timeout = 0);
+
         
+
 
     };
 } // namespace reddish
