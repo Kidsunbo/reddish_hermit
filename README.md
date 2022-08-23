@@ -12,7 +12,7 @@
 </div>
 
 ## Usage
-### conan
+### Conan
 `reddish_hermit` uses `conan` as its package manager and use one custom repository to hold the package. So installing this library only requires one
 extra command:
 
