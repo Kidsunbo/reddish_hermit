@@ -1,43 +1,41 @@
 #include <network/connection.h>
 
-#include <utils/timer.h>
-
 #include <iostream>
 
 #include <boost/regex.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+using namespace boost::asio::experimental::awaitable_operators;
 
 using namespace reddish::network;
 
 boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
 {
 
-    auto [addr, ec] = co_await conn.connect_with_host_name(host, 80);
-    if (ec)
+    auto v = co_await conn.connect_with_host_name(host, 80);
+    if (!v)
     {
-        std::cout << ec.message() << std::endl;
+        std::cout <<"#error 1 "<<  v.error() << std::endl;
         co_return "";
     }
-    std::cout << addr << std::endl;
+    std::cout <<"#value 1 "<< v.value() << std::endl;
 
-    std::size_t n;
-    std::tie(n, ec) = co_await conn.write("GET / HTTP/1.1\r\n\r\n");
-    if (ec)
+    auto ve = co_await conn.write("GET / HTTP/1.1\r\n\r\n");
+    if (!ve)
     {
-        std::cout << ec.message() << std::endl;
+        std::cout <<"#error 2 "<<  ve.error().message() << std::endl;
         co_return "";
     }
-    std::cout << n << std::endl;
+    std::cout << "#value 2 "<< ve.value() << std::endl;
 
     std::string s;
     boost::asio::dynamic_string_buffer buf(s);
-    std::tie(n, ec) = co_await conn.read_until(buf, "\r\n\r\n");
-    if (ec)
+    ve = co_await conn.read_until(buf, "\r\n\r\n");
+    if (!ve)
     {
-        std::cout << ec.message() << std::endl;
+        std::cout << "#error 3 " <<ve.error() << std::endl;
         co_return "";
     }
-    std::cout << n << std::endl;
-    std::cout << s << std::endl;
+    std::cout << "#value 3 "<< ve.value() << std::endl;
 
     std::size_t total_size = 0;
     boost::regex re("Content-Length: ([0-9]+)");
@@ -51,17 +49,16 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
         std::cout << "Failed to parse Content-Length" << std::endl;
         co_return "";
     }
-    buf.consume(n);
+    buf.consume(ve.value());
 
-    std::tie(n, ec) = co_await conn.read_exact(buf, total_size - s.length());
-    if (ec)
+    ve = co_await conn.read_exact(buf, total_size - s.length());
+    if (!ve)
     {
-        std::cout << ec.message() << std::endl;
+        std::cout << "#error 4 "<< ve.error() << std::endl;
         co_return "";
     }
-    std::cout << n << std::endl;
-    std::cout << s << std::endl;
-    buf.consume(n);
+    std::cout <<"#value 4 "<< ve.value() << std::endl;
+    buf.consume(ve.value());
     co_return s;
 }
 
@@ -79,12 +76,9 @@ boost::asio::awaitable<void> co_main()
         "www.163.com",
 
     };
-
-    for (auto &item : vec)
-    {
+    for(auto& item : vec){
         auto s = co_await get(conn, item);
-        // std::cout<<s<<std::endl;
-        conn.close();
+        std::cout<<s<<std::endl;
     }
 }
 

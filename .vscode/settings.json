@@ -74,6 +74,9 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "csetjmp": "cpp",
+        "strstream": "cpp",
+        "cfenv": "cpp"
     }
 }
