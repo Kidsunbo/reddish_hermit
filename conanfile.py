@@ -29,7 +29,7 @@ class ReddishHermitConan(ConanFile):
     }
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "include/*", "LICENSE"
+    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*", "LICENSE"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -74,3 +74,6 @@ class ReddishHermitConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["reddish_hermit"]
+        if self.options.enable_test:
+            self.cpp_info.cxxflags = ["--coverage", "-fsanitize=address"]
+            self.cpp_info.exelinkflags = ["--coverage", "-fsanitize=address"]

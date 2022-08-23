@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <proto/proto.h>
+#include <reddish/proto/proto.h>
 
 using namespace reddish::proto;
 
