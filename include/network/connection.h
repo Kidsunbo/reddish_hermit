@@ -2,6 +2,7 @@
 #define REDDISH_HERMIT_NETWORK_CONNECTION_H
 
 #include <boost/asio.hpp>
+#include <boost/outcome.hpp>
 #include <tuple>
 
 namespace reddish::network
@@ -10,9 +11,10 @@ namespace reddish::network
         boost::asio::any_io_executor& ctx;
         boost::asio::ip::tcp::socket sock;
         int timeout;
+        boost::asio::steady_timer timer;
 
         template<typename T>
-        using Result = boost::asio::awaitable<std::tuple<T, boost::system::error_code>>;
+        using Result = boost::asio::awaitable<boost::outcome_v2::result<T>>;
         using Buffer = boost::asio::dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>>;
         public:
         explicit Connection(boost::asio::any_io_executor& ctx, int timeout=0);

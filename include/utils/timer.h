@@ -5,7 +5,7 @@
 
 namespace reddish::utils
 {
-    boost::asio::awaitable<boost::system::error_code> timeout(boost::asio::any_io_executor& ctx, int sec);
+    // boost::asio::awaitable<boost::system::error_code> timeout(boost::asio::any_io_executor& ctx, int sec);
 } // namespace reddish::utils
 
 
