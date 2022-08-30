@@ -43,7 +43,7 @@ class ReddishHermitConan(ConanFile):
         self.options["kie_toolbox"].enable_test = False
 
     def requirements(self):
-        self.requires("kie_toolbox/0.1.1")
+        self.requires("kie_toolbox/0.1.0")
         if self.options.with_ssl:
             self.requires("openssl/3.0.5")
 
