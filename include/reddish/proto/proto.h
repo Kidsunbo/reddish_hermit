@@ -7,10 +7,25 @@
 namespace reddish::proto
 {
 
+    // wrap string and string_view type
     std::string proto_wrap(std::string_view value);
+    // wrap const char* type
     std::string proto_wrap(const char* value);
+    // wrap float type
+    std::string proto_wrap(float value);
+    // wrap double type
     std::string proto_wrap(double value);
+    // wrap long double type
+    std::string proto_wrap(long double value);
+    // wrap short, unsigned short and int type
+    std::string proto_wrap(std::int32_t value);
+    // wrap unsigned int type
+    std::string proto_wrap(std::uint32_t value);
+    // wrap long(64bit), long long type
     std::string proto_wrap(std::int64_t value);
+    // wrap unsigned long(64bit), unsigned long long type
+    std::string proto_wrap(std::uint64_t value);
+    // wrap boolean type
     std::string proto_wrap(bool value);
 
     template<std::size_t SizeHint = 30, typename... ARGS>
