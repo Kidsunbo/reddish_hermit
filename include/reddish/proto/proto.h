@@ -23,7 +23,7 @@ namespace reddish::proto
     std::string proto_wrap(std::uint32_t value);
     // wrap long(64bit), long long type
     std::string proto_wrap(std::int64_t value);
-    // wrap unsigned long(64bit) type, unsigned long long(32bit)
+    // wrap unsigned long(64bit), unsigned long long(32bit) type
     std::string proto_wrap(std::uint64_t value);
     // wrap boolean type
     std::string proto_wrap(bool value);
