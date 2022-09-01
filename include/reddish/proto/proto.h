@@ -23,10 +23,11 @@ namespace reddish::proto
     std::string proto_wrap(std::uint32_t value);
     // wrap long(64bit), long long type
     std::string proto_wrap(std::int64_t value);
-    // wrap unsigned long(64bit), unsigned long long type
+    // wrap unsigned long(64bit), unsigned long long(32bit) type
     std::string proto_wrap(std::uint64_t value);
     // wrap boolean type
     std::string proto_wrap(bool value);
+
 
     template<std::size_t SizeHint = 30, typename... ARGS>
     std::string to_request_str(Command cmd, ARGS&&... args){
