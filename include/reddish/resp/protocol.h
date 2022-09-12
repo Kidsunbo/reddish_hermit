@@ -7,7 +7,7 @@
 #include "command.h"
 #include "../network/connection.h"
 
-#include "boost/outcome.hpp"
+#include <boost/outcome.hpp>
 
 namespace reddish::resp
 {
@@ -77,77 +77,73 @@ namespace reddish::resp
         ResultType val_type;
 
     public:
-        boost::outcome_v2::result<Result> create_from_connection(network::Connection &conn);
+
+
+        static boost::outcome_v2::result<Result> from_string(std::string_view s);
+
         ResultType type();
 
-        boost::outcome_v2::result<std::string> as_string();
+        bool is_null();
 
-        boost::outcome_v2::result<std::int32_t> as_int32();
+        boost::outcome_v2::result<std::string> as_string() const noexcept;
 
-        boost::outcome_v2::result<std::int64_t> as_int64();
+        boost::outcome_v2::result<std::int32_t> as_int32() const noexcept;
 
-        boost::outcome_v2::result<std::uint32_t> as_uint32();
+        boost::outcome_v2::result<std::int64_t> as_int64() const noexcept;
 
-        boost::outcome_v2::result<std::uint64_t> as_uint64();
+        boost::outcome_v2::result<std::uint32_t> as_uint32() const noexcept;
 
-        boost::outcome_v2::result<bool> as_boolean();
+        boost::outcome_v2::result<std::uint64_t> as_uint64() const noexcept;
 
-        boost::outcome_v2::result<float> as_float();
+        boost::outcome_v2::result<bool> as_boolean() const noexcept;
 
-        boost::outcome_v2::result<double> as_double();
+        boost::outcome_v2::result<float> as_float() const noexcept;
 
-        boost::outcome_v2::result<std::vector<Result>> as_vector();
+        boost::outcome_v2::result<double> as_double() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::string>> as_string_vector();
+        boost::outcome_v2::result<std::vector<Result>> as_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::int64_t>> as_int64_vector();
+        boost::outcome_v2::result<std::vector<std::string>> as_string_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::uint64_t>> as_uint64_vector();
+        boost::outcome_v2::result<std::vector<std::int64_t>> as_int64_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<float>> as_float_vector();
+        boost::outcome_v2::result<std::vector<std::uint64_t>> as_uint64_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<double>> as_double_vector();
+        boost::outcome_v2::result<std::vector<float>> as_float_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<bool>> as_boolean_vector();
+        boost::outcome_v2::result<std::vector<double>> as_double_vector() const noexcept;
 
-        std::string as_string(std::string default_value);
+        boost::outcome_v2::result<std::vector<bool>> as_boolean_vector() const noexcept;
 
-        std::int32_t as_int32(std::int32_t default_value);
+        std::string as_string(std::string default_value) const noexcept;
 
-        std::int64_t as_int64(std::int64_t default_value);
+        std::int32_t as_int32(std::int32_t default_value) const noexcept;
 
-        std::uint32_t as_uint32(std::uint32_t default_value);
+        std::int64_t as_int64(std::int64_t default_value) const noexcept;
 
-        std::uint64_t as_uint64(std::uint64_t default_value);
+        std::uint32_t as_uint32(std::uint32_t default_value) const noexcept;
 
-        bool as_boolean(bool default_value);
+        std::uint64_t as_uint64(std::uint64_t default_value) const noexcept;
 
-        float as_float(float default_value);
+        bool as_boolean(bool default_value) const noexcept;
 
-        double as_double(double default_value);
+        float as_float(float default_value) const noexcept;
 
-        std::vector<Result> as_vector(std::vector<Result> default_value);
+        double as_double(double default_value) const noexcept;
 
-        std::vector<std::string> as_string_vector(std::vector<std::string> default_value);
+        std::vector<Result> as_vector(std::vector<Result> default_value) const noexcept;
 
-        std::vector<std::int64_t> as_int64_vector(std::vector<std::int64_t> default_value);
+        std::vector<std::string> as_string_vector(std::vector<std::string> default_value) const noexcept;
 
-        std::vector<std::uint64_t> as_uint64_vector(std::vector<std::uint64_t> default_value);
+        std::vector<std::int64_t> as_int64_vector(std::vector<std::int64_t> default_value) const noexcept;
 
-        std::vector<float> as_float_vector(std::vector<float> default_value);
+        std::vector<std::uint64_t> as_uint64_vector(std::vector<std::uint64_t> default_value) const noexcept;
 
-        std::vector<double> as_double_vector(std::vector<double> default_value);
+        std::vector<float> as_float_vector(std::vector<float> default_value) const noexcept;
 
-        std::vector<bool> as_boolean_vector(std::vector<bool> default_value);
-    };
+        std::vector<double> as_double_vector(std::vector<double> default_value) const noexcept;
 
-    template <typename T>
-    concept specific_result_concept = requires(T t, network::Connection conn)
-    {
-        typename T::value_type;
-        {T::create_from_connection(conn)} -> std::same_as<boost::outcome_v2::result<T>>;
-        {t.result()} -> std::same_as<boost::outcome_v2::result<typename T::value_type>&>;
-        {t.result(std::declval<typename T::value_type>())} -> std::same_as<typename T::value_type>;
+        std::vector<bool> as_boolean_vector(std::vector<bool> default_value) const noexcept;
     };
 
     class IntResult
@@ -162,12 +158,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<IntResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<IntResult>, "IntResult does not satisfy the requirement");
-
 
     class StringResult
     {
@@ -181,11 +175,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<StringResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<StringResult>, "StringResult does not satisfy the requirement");
 
     class BoolResult
     {
@@ -198,11 +191,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<BoolResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<BoolResult>, "BoolResult does not satisfy the requirement");
 
     class VectorResult
     {
@@ -215,12 +207,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<VectorResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
-
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<VectorResult>, "VectorResult does not satisfy the requirement");
 
     class DoubleResult
     {
@@ -233,11 +223,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<DoubleResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<DoubleResult>, "DoubleResult does not satisfy the requirement");
 
     class DoubleVectorResult
     {
@@ -250,11 +239,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<DoubleVectorResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<DoubleVectorResult>, "DoubleResult does not satisfy the requirement");
 
     class IntVectorResult
     {
@@ -267,11 +255,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<IntVectorResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<IntVectorResult>, "IntVectorResult does not satisfy the requirement");
 
     class StringVectorResult
     {
@@ -284,11 +271,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<StringVectorResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<StringVectorResult>, "StringVectorResult does not satisfy the requirement");
 
     class BoolVectorResult
     {
@@ -301,11 +287,10 @@ namespace reddish::resp
     public:
         static boost::outcome_v2::result<BoolVectorResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<BoolVectorResult>, "BoolVectorResult does not satisfy the requirement");
 
     class MapResult
     {
@@ -316,14 +301,12 @@ namespace reddish::resp
         boost::outcome_v2::result<value_type> val;
 
     public:
-
         static boost::outcome_v2::result<MapResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<MapResult>, "MapResult does not satisfy the requirement");
 
     class MapStringStringResult
     {
@@ -334,14 +317,12 @@ namespace reddish::resp
         boost::outcome_v2::result<value_type> val;
 
     public:
-
         static boost::outcome_v2::result<MapStringStringResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<MapStringStringResult>, "MapStringStringResult does not satisfy the requirement");
 
     class MapStringIntResult
     {
@@ -352,33 +333,12 @@ namespace reddish::resp
         boost::outcome_v2::result<value_type> val;
 
     public:
-
         static boost::outcome_v2::result<MapStringIntResult> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result();
+        boost::outcome_v2::result<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value);
+        value_type result(value_type defalt_value) const noexcept;
     };
-    static_assert(specific_result_concept<MapStringIntResult>, "MapStringIntResult does not satisfy the requirement");
-
-    class SetStringResult
-    {
-    public:
-        using value_type = std::set<std::string>;
-
-    private:
-        boost::outcome_v2::result<value_type> val;
-
-    public:
-
-        static boost::outcome_v2::result<SetStringResult> create_from_connection(network::Connection &conn);
-
-        boost::outcome_v2::result<value_type> &result();
-
-        value_type result(value_type defalt_value);
-    };
-    static_assert(specific_result_concept<SetStringResult>, "SetStringResult does not satisfy the requirement");
-
 
 } // namespace reddish::resp
 
