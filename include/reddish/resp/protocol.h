@@ -64,8 +64,11 @@ namespace reddish::resp
 
     class Result
     {
+        std::string val;
+    public:
         enum class ResultType
         {
+            Unknown,
             SimpleString,
             Error,
             Integer,
@@ -73,17 +76,12 @@ namespace reddish::resp
             Array,
         };
 
-        std::string val;
-        ResultType val_type;
+        static boost::outcome_v2::result<Result> from_string(const std::string& s);
+        static boost::outcome_v2::result<Result> from_string(std::string&& s);
 
-    public:
+        ResultType type() const noexcept;
 
-
-        static boost::outcome_v2::result<Result> from_string(std::string_view s);
-
-        ResultType type();
-
-        bool is_null();
+        bool is_null() const noexcept;
 
         boost::outcome_v2::result<std::string> as_string() const noexcept;
 

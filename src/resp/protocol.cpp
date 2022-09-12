@@ -2,6 +2,7 @@
 #include "reddish/utils/str.h"
 
 #include <sstream>
+#include <charconv>
 namespace reddish::resp
 {
 
@@ -108,45 +109,49 @@ namespace reddish::resp
         return request_str;
     }
 
-    boost::outcome_v2::result<Result> Result::from_string(std::string_view s)
+    boost::outcome_v2::result<Result> Result::from_string(const std::string &s)
     {
         if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
         {
             return boost::system::errc::invalid_argument;
         }
         Result result;
-
-        auto it = s.cbegin();
-        switch (*it++)
-        {
-        case '+':
-            result.val_type = ResultType::SimpleString;
-            break;
-        case '-':
-            result.val_type = ResultType::Error;
-            break;
-        case ':':
-            result.val_type = ResultType::Integer;
-            break;
-        case '$':
-            result.val_type = ResultType::BulkString;
-            break;
-        case '*':
-            result.val_type = ResultType::Array;
-            break;
-        }
-        result.val = std::string{s.substr(1, s.length() - 3)};
+        result.val = s;
         return result;
     }
 
-    Result::ResultType Result::type()
+    boost::outcome_v2::result<Result> Result::from_string(std::string &&s)
     {
-        return val_type;
+        if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        Result result;
+        result.val = std::move(s);
+        return result;
     }
 
-    bool Result::is_null()
+    Result::ResultType Result::type() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::BulkString)
+        switch (val[0])
+        {
+        case '+':
+            return ResultType::SimpleString;
+        case '-':
+            return ResultType::Error;
+        case ':':
+            return ResultType::Integer;
+        case '$':
+            return ResultType::BulkString;
+        case '*':
+            return ResultType::Array;
+        }
+        return ResultType::Unknown;
+    }
+
+    bool Result::is_null() const noexcept
+    {
+        if (type() == ResultType::Array || type() == ResultType::BulkString)
         {
             auto it = val.cbegin();
             if (utils::advance_if_same(it, val.cend(), "-1"))
@@ -159,15 +164,15 @@ namespace reddish::resp
 
     boost::outcome_v2::result<std::string> Result::as_string() const noexcept
     {
-        switch (val_type)
+        switch (type())
         {
         case ResultType::SimpleString:
         case ResultType::Integer:
         case ResultType::Error:
-            return val;
+            return val.substr(1, val.length() - 3);
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length)
             {
@@ -185,155 +190,179 @@ namespace reddish::resp
 
     boost::outcome_v2::result<std::int32_t> Result::as_int32() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            std::int32_t result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<std::int32_t>(std::stoi(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<std::int32_t>(std::stoi(std::string{it, it + length.value()}));
-                }
-                else
+                std::int32_t result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<std::int64_t> Result::as_int64() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            std::int64_t result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<std::int64_t>(std::stoll(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<std::int64_t>(std::stoll(std::string{it, it + length.value()}));
-                }
-                else
+                std::int64_t result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<std::uint32_t> Result::as_uint32() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            std::uint32_t result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<std::uint32_t>(std::stoul(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<std::uint32_t>(std::stoul(std::string{it, it + length.value()}));
-                }
-                else
+                std::uint32_t result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<std::uint64_t> Result::as_uint64() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            std::uint64_t result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<std::uint64_t>(std::stoull(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<std::uint64_t>(std::stoull(std::string{it, it + length.value()}));
-                }
-                else
+                std::uint64_t result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<bool> Result::as_boolean() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
@@ -346,85 +375,97 @@ namespace reddish::resp
 
     boost::outcome_v2::result<float> Result::as_float() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            float result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<float>(std::stod(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<float>(std::stod(std::string{it, it + length.value()}));
-                }
-                else
+                float result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<double> Result::as_double() const noexcept
     {
-        if (val_type == ResultType::Array || val_type == ResultType::Error)
+        if (type() == ResultType::Array || type() == ResultType::Error)
         {
             return boost::system::errc::invalid_argument;
         }
-        try
+        switch (type())
         {
-            switch (val_type)
+        case ResultType::SimpleString:
+        case ResultType::Integer:
+        {
+            double result;
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            if (ec != std::errc{})
             {
-            case ResultType::SimpleString:
-            case ResultType::Integer:
-                return static_cast<double>(std::stod(val));
-            case ResultType::BulkString:
+                return boost::system::errc::invalid_argument;
+            }
+            return result;
+        }
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin();
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
-                auto it = val.cbegin();
-                auto length = utils::retrieve_length(it, val.cend());
-                if (length && length.value() > 0 && std::distance(it, val.cend()) <= length.value())
-                {
-                    return static_cast<double>(std::stod(std::string{it, it + length.value()}));
-                }
-                else
+                double result;
+                [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base(), it.base() + length.value(), result);
+                if (ec != std::errc{})
                 {
                     return boost::system::errc::invalid_argument;
                 }
+                return result;
             }
-            default:
+            else
+            {
                 return boost::system::errc::invalid_argument;
             }
         }
-        catch (std::exception &e)
-        {
+        default:
             return boost::system::errc::invalid_argument;
         }
-        return boost::system::errc::invalid_argument;
     }
 
     boost::outcome_v2::result<std::vector<Result>> Result::as_vector() const noexcept
     {
-        if (val_type != ResultType::Array)
+        if (type() != ResultType::Array)
         {
             return boost::system::errc::invalid_argument;
         }
-        auto it = val.cbegin();
+        auto it = val.cbegin()+1;
         auto length = utils::retrieve_length(it, val.cend());
         if (!length)
         {
@@ -439,7 +480,7 @@ namespace reddish::resp
             {
                 return length.error();
             }
-            auto result = Result::from_string(std::string_view{it, it + length.value()});
+            auto result = Result::from_string(std::string{it, it + length.value()});
             if (result)
             {
                 vec.push_back(result.value());
@@ -455,11 +496,11 @@ namespace reddish::resp
 
     boost::outcome_v2::result<std::vector<std::string>> Result::as_string_vector() const noexcept
     {
-        if (val_type != ResultType::Array)
+        if (type() != ResultType::Array)
         {
             return boost::system::errc::invalid_argument;
         }
-        auto it = val.cbegin();
+        auto it = val.cbegin()+1;
         auto length = utils::retrieve_length(it, val.cend());
         if (!length)
         {
@@ -467,15 +508,24 @@ namespace reddish::resp
         }
         std::vector<std::string> vec;
         vec.reserve(length.value());
-        for(std::int64_t i= 0; i<length.value(); i++){
-            auto length = utils::retrieve_length(it, val.cend());
-            if (length)
+        for (std::int64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
             {
-                auto s = utils::retrieve_string_without_advance(it, val.cend(), length.value());
-                if(!s){
-                    return s.error();
+                switch (*it)
+                {
+                case '+':
+                case '-':
+                case ':':
+                    vec.push_back(std::string{it + 1, it + length.value() - 2});
+                    break;
+                case '$':
+                    break;
+                case '*':
+                    return boost::system::errc::invalid_argument;
                 }
-                vec.push_back(s.value());
+                it += length.value();
             }
             else
             {

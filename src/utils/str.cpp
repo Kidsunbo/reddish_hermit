@@ -64,7 +64,7 @@ namespace reddish::utils
 
     boost::outcome_v2::result<std::string> retrieve_string_without_advance(std::string::const_iterator &it, const std::string::const_iterator &end, std::int64_t length)
     {
-        if (length >= 0 && std::distance(it, end) <= length + 2)
+        if (length >= 0 && std::distance(it, end) >= length)
         {
             return std::string{it, it + length};
         }
