@@ -153,7 +153,7 @@ namespace reddish::resp
     {
         if (type() == ResultType::Array || type() == ResultType::BulkString)
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             if (utils::advance_if_same(it, val.cend(), "-1"))
             {
                 return true;
@@ -209,7 +209,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -252,7 +252,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -295,7 +295,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -338,7 +338,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -366,11 +366,37 @@ namespace reddish::resp
         {
             return boost::system::errc::invalid_argument;
         }
-        if (utils::case_insensitive_equal(val, "true") || utils::case_insensitive_equal(val, "1") || utils::case_insensitive_equal(val, "t"))
+        switch (type())
         {
-            return true;
+        case ResultType::Integer:
+        case ResultType::SimpleString:
+        {
+            if (utils::case_insensitive_equal(std::string_view{val}.substr(1), "true\r\n") || utils::case_insensitive_equal(std::string_view{val}.substr(1), "1\r\n") || utils::case_insensitive_equal(std::string_view{val}.substr(1), "t\r\n"))
+            {
+                return true;
+            }
+            return false;
         }
-        return false;
+        case ResultType::BulkString:
+        {
+            auto it = val.cbegin() + 1;
+            auto length = utils::retrieve_length(it, val.cend());
+            if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
+            {
+                if (utils::case_insensitive_equal(std::string_view{it, it + length.value()}, "true") || utils::case_insensitive_equal(std::string_view{it, it + length.value()}, "1") || utils::case_insensitive_equal(std::string_view{it, it + length.value()}, "t"))
+                {
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return boost::system::errc::invalid_argument;
+            }
+        }
+        default:
+            return boost::system::errc::invalid_argument;
+        }
     }
 
     boost::outcome_v2::result<float> Result::as_float() const noexcept
@@ -394,7 +420,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -437,7 +463,7 @@ namespace reddish::resp
         }
         case ResultType::BulkString:
         {
-            auto it = val.cbegin();
+            auto it = val.cbegin() + 1;
             auto length = utils::retrieve_length(it, val.cend());
             if (length && length.value() > 0 && std::distance(it, val.cend()) >= length.value() + 2)
             {
@@ -465,7 +491,7 @@ namespace reddish::resp
         {
             return boost::system::errc::invalid_argument;
         }
-        auto it = val.cbegin()+1;
+        auto it = val.cbegin() + 1;
         auto length = utils::retrieve_length(it, val.cend());
         if (!length)
         {
@@ -500,7 +526,7 @@ namespace reddish::resp
         {
             return boost::system::errc::invalid_argument;
         }
-        auto it = val.cbegin()+1;
+        auto it = val.cbegin() + 1;
         auto length = utils::retrieve_length(it, val.cend());
         if (!length)
         {
@@ -521,7 +547,21 @@ namespace reddish::resp
                     vec.push_back(std::string{it + 1, it + length.value() - 2});
                     break;
                 case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (!length)
+                    {
+                        return length.error();
+                    }
+                    auto s = utils::retrieve_string_without_advance(parse_it, val.cend(), length.value());
+                    if (!s)
+                    {
+                        return s.error();
+                    }
+                    vec.push_back(s.value());
                     break;
+                }
                 case '*':
                     return boost::system::errc::invalid_argument;
                 }
@@ -537,27 +577,329 @@ namespace reddish::resp
 
     boost::outcome_v2::result<std::vector<std::int64_t>> Result::as_int64_vector() const noexcept
     {
-        return boost::system::errc::not_supported;
+        if (type() != ResultType::Array)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        auto it = val.cbegin() + 1;
+        auto length = utils::retrieve_length(it, val.cend());
+        if (!length)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        std::vector<std::int64_t> vec;
+        vec.reserve(length.value());
+        for (std::int64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
+            {
+                switch (*it)
+                {
+                case '+':
+                case ':':
+                {
+                    std::int64_t result;
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    if (ec != std::errc{})
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                    vec.push_back(result);
+                    break;
+                }
+                case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (length && length.value() > 0 && std::distance(parse_it, val.cend()) >= length.value() + 2)
+                    {
+                        std::int64_t result;
+                        [[maybe_unused]] auto [ignore, ec] = std::from_chars(parse_it.base(), parse_it.base() + length.value(), result);
+                        if (ec != std::errc{})
+                        {
+                            return boost::system::errc::invalid_argument;
+                        }
+                        return result;
+                    }
+                    else
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                }
+                case '-':
+                case '*':
+                    return boost::system::errc::invalid_argument;
+                }
+                it += length.value();
+            }
+            else
+            {
+                return length.error();
+            }
+        }
+        return vec;
     }
 
     boost::outcome_v2::result<std::vector<std::uint64_t>> Result::as_uint64_vector() const noexcept
     {
-        return boost::system::errc::not_supported;
+        if (type() != ResultType::Array)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        auto it = val.cbegin() + 1;
+        auto length = utils::retrieve_length(it, val.cend());
+        if (!length)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        std::vector<std::uint64_t> vec;
+        vec.reserve(length.value());
+        for (std::uint64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
+            {
+                switch (*it)
+                {
+                case '+':
+                case ':':
+                {
+                    std::uint64_t result;
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    if (ec != std::errc{})
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                    vec.push_back(result);
+                    break;
+                }
+                case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (length && length.value() > 0 && std::distance(parse_it, val.cend()) >= length.value() + 2)
+                    {
+                        std::uint64_t result;
+                        [[maybe_unused]] auto [ignore, ec] = std::from_chars(parse_it.base(), parse_it.base() + length.value(), result);
+                        if (ec != std::errc{})
+                        {
+                            return boost::system::errc::invalid_argument;
+                        }
+                        return result;
+                    }
+                    else
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                }
+                case '-':
+                case '*':
+                    return boost::system::errc::invalid_argument;
+                }
+                it += length.value();
+            }
+            else
+            {
+                return length.error();
+            }
+        }
+        return vec;
     }
 
     boost::outcome_v2::result<std::vector<float>> Result::as_float_vector() const noexcept
     {
-        return boost::system::errc::not_supported;
+        if (type() != ResultType::Array)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        auto it = val.cbegin() + 1;
+        auto length = utils::retrieve_length(it, val.cend());
+        if (!length)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        std::vector<float> vec;
+        vec.reserve(length.value());
+        for (std::uint64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
+            {
+                switch (*it)
+                {
+                case '+':
+                case ':':
+                {
+                    float result;
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    if (ec != std::errc{})
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                    vec.push_back(result);
+                    break;
+                }
+                case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (length && length.value() > 0 && std::distance(parse_it, val.cend()) >= length.value() + 2)
+                    {
+                        float result;
+                        [[maybe_unused]] auto [ignore, ec] = std::from_chars(parse_it.base(), parse_it.base() + length.value(), result);
+                        if (ec != std::errc{})
+                        {
+                            return boost::system::errc::invalid_argument;
+                        }
+                        return result;
+                    }
+                    else
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                }
+                case '-':
+                case '*':
+                    return boost::system::errc::invalid_argument;
+                }
+                it += length.value();
+            }
+            else
+            {
+                return length.error();
+            }
+        }
+        return vec;
     }
 
     boost::outcome_v2::result<std::vector<double>> Result::as_double_vector() const noexcept
     {
-        return boost::system::errc::not_supported;
+        if (type() != ResultType::Array)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        auto it = val.cbegin() + 1;
+        auto length = utils::retrieve_length(it, val.cend());
+        if (!length)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        std::vector<double> vec;
+        vec.reserve(length.value());
+        for (std::uint64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
+            {
+                switch (*it)
+                {
+                case '+':
+                case ':':
+                {
+                    double result;
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    if (ec != std::errc{})
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                    vec.push_back(result);
+                    break;
+                }
+                case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (length && length.value() > 0 && std::distance(parse_it, val.cend()) >= length.value() + 2)
+                    {
+                        double result;
+                        [[maybe_unused]] auto [ignore, ec] = std::from_chars(parse_it.base(), parse_it.base() + length.value(), result);
+                        if (ec != std::errc{})
+                        {
+                            return boost::system::errc::invalid_argument;
+                        }
+                        return result;
+                    }
+                    else
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                }
+                case '-':
+                case '*':
+                    return boost::system::errc::invalid_argument;
+                }
+                it += length.value();
+            }
+            else
+            {
+                return length.error();
+            }
+        }
+        return vec;
     }
 
     boost::outcome_v2::result<std::vector<bool>> Result::as_boolean_vector() const noexcept
     {
-        return boost::system::errc::not_supported;
+        if (type() != ResultType::Array)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        auto it = val.cbegin() + 1;
+        auto length = utils::retrieve_length(it, val.cend());
+        if (!length)
+        {
+            return boost::system::errc::invalid_argument;
+        }
+        std::vector<bool> vec;
+        vec.reserve(length.value());
+        for (std::uint64_t i = 0; i < length.value(); i++)
+        {
+            auto length = utils::next_item_length(it, val.cend());
+            if (length && length.value() > 2)
+            {
+                switch (*it)
+                {
+                case '+':
+                case ':':
+                {
+                    if (utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "true\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "1\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "t\r\n"))
+                    {
+                        vec.push_back(true);
+                    }
+                    vec.push_back(false);
+                    break;
+                }
+                case '$':
+                {
+                    auto parse_it = it + 1;
+                    auto length = utils::retrieve_length(parse_it, val.cend());
+                    if (length && length.value() > 0 && std::distance(parse_it, val.cend()) >= length.value() + 2)
+                    {
+                        if (utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "true") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "1") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "t"))
+                        {
+                            vec.push_back(true);
+                        }
+                        vec.push_back(false);
+                    }
+                    else
+                    {
+                        return boost::system::errc::invalid_argument;
+                    }
+                    break;
+                }
+                case '-':
+                case '*':
+                    return boost::system::errc::invalid_argument;
+                }
+                it += length.value();
+            }
+            else
+            {
+                return length.error();
+            }
+        }
+        return vec;
     }
 
     std::string Result::as_string(std::string default_value) const noexcept
