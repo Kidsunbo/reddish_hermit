@@ -600,7 +600,7 @@ namespace reddish::resp
                 case ':':
                 {
                     std::int64_t result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -620,12 +620,13 @@ namespace reddish::resp
                         {
                             return boost::system::errc::invalid_argument;
                         }
-                        return result;
+                        vec.push_back(result);
                     }
                     else
                     {
                         return boost::system::errc::invalid_argument;
                     }
+                    break;
                 }
                 case '-':
                 case '*':
@@ -655,7 +656,7 @@ namespace reddish::resp
         }
         std::vector<std::uint64_t> vec;
         vec.reserve(length.value());
-        for (std::uint64_t i = 0; i < length.value(); i++)
+        for (std::int64_t i = 0; i < length.value(); i++)
         {
             auto length = utils::next_item_length(it, val.cend());
             if (length && length.value() > 2)
@@ -666,7 +667,7 @@ namespace reddish::resp
                 case ':':
                 {
                     std::uint64_t result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -686,12 +687,13 @@ namespace reddish::resp
                         {
                             return boost::system::errc::invalid_argument;
                         }
-                        return result;
+                        vec.push_back(result);
                     }
                     else
                     {
                         return boost::system::errc::invalid_argument;
                     }
+                    break;
                 }
                 case '-':
                 case '*':
@@ -721,7 +723,7 @@ namespace reddish::resp
         }
         std::vector<float> vec;
         vec.reserve(length.value());
-        for (std::uint64_t i = 0; i < length.value(); i++)
+        for (std::int64_t i = 0; i < length.value(); i++)
         {
             auto length = utils::next_item_length(it, val.cend());
             if (length && length.value() > 2)
@@ -732,7 +734,7 @@ namespace reddish::resp
                 case ':':
                 {
                     float result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -752,12 +754,13 @@ namespace reddish::resp
                         {
                             return boost::system::errc::invalid_argument;
                         }
-                        return result;
+                        vec.push_back(result);
                     }
                     else
                     {
                         return boost::system::errc::invalid_argument;
                     }
+                    break;
                 }
                 case '-':
                 case '*':
@@ -787,7 +790,7 @@ namespace reddish::resp
         }
         std::vector<double> vec;
         vec.reserve(length.value());
-        for (std::uint64_t i = 0; i < length.value(); i++)
+        for (std::int64_t i = 0; i < length.value(); i++)
         {
             auto length = utils::next_item_length(it, val.cend());
             if (length && length.value() > 2)
@@ -798,7 +801,7 @@ namespace reddish::resp
                 case ':':
                 {
                     double result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -818,12 +821,13 @@ namespace reddish::resp
                         {
                             return boost::system::errc::invalid_argument;
                         }
-                        return result;
+                        vec.push_back(result);
                     }
                     else
                     {
                         return boost::system::errc::invalid_argument;
                     }
+                    break;
                 }
                 case '-':
                 case '*':
@@ -853,7 +857,7 @@ namespace reddish::resp
         }
         std::vector<bool> vec;
         vec.reserve(length.value());
-        for (std::uint64_t i = 0; i < length.value(); i++)
+        for (std::int64_t i = 0; i < length.value(); i++)
         {
             auto length = utils::next_item_length(it, val.cend());
             if (length && length.value() > 2)
@@ -863,7 +867,7 @@ namespace reddish::resp
                 case '+':
                 case ':':
                 {
-                    if (utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "true\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "1\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length}, "t\r\n"))
+                    if (utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "true\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "1\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "t\r\n"))
                     {
                         vec.push_back(true);
                     }
