@@ -18,7 +18,7 @@ namespace reddish::utils
 
     bool advance_if_same(std::string::const_iterator& it, const std::string::const_iterator& end, std::string_view s);
 
-    std::size_t advance_to_next_line(std::string::const_iterator& it, const std::string::const_iterator& end, std::string_view s);
+    std::size_t advance_to_next_line(std::string::const_iterator& it, const std::string::const_iterator& end);
 
     boost::outcome_v2::result<std::int64_t> next_item_length(std::string::const_iterator it, std::string::const_iterator end);
 
