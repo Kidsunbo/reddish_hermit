@@ -255,6 +255,61 @@ TEST(StrTest, AdvanceToNextLineFunction){
   ASSERT_EQ(it, left_string8.cend());
 }
 
+
+TEST(StrTest, NextItemLengthFunction){
+  std::string empty_string = "";
+  auto v = next_item_length(empty_string.cbegin(), empty_string.cend());
+  ASSERT_TRUE(v.has_error());
+
+  std::string wrong_string = "hello";
+  v = next_item_length(wrong_string.cbegin(), wrong_string.cend());
+  ASSERT_TRUE(v.has_error());
+
+  std::string simple_string = "+hello";
+  v = next_item_length(simple_string.cbegin(), simple_string.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 5);
+
+  std::string simple_string1 = "+hello\r";
+  v = next_item_length(simple_string1.cbegin(), simple_string1.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 6);
+
+  std::string simple_string2 = "+hello\r\n";
+  v = next_item_length(simple_string2.cbegin(), simple_string2.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 8);
+
+  std::string simple_string3 = "+hello\r\n\r\n";
+  v = next_item_length(simple_string3.cbegin(), simple_string3.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 8);
+
+  std::string error_string = "-hello";
+  v = next_item_length(error_string.cbegin(), error_string.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 5);
+
+  std::string bulk_string = "$12\r\nhello\r\nworld\r\n";
+  v = next_item_length(bulk_string.cbegin(), bulk_string.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 19);
+
+  std::string error_bulk_string = "$12\r\nhello\r\nwor";
+  v = next_item_length(error_bulk_string.cbegin(), error_bulk_string.cend());
+  ASSERT_TRUE(v.has_error());
+
+  std::string array_string = "*2\r\n$-1\r\n:456\r\n";
+  v = next_item_length(array_string.cbegin(), array_string.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 15);
+
+  std::string array_string1 = "*3\r\n$-1\r\n:123\r\n-Err hello world and this is a test \r\n";
+  v = next_item_length(array_string1.cbegin(), array_string1.cend());
+  ASSERT_FALSE(v.has_error());
+  ASSERT_EQ(v.value(), 53);
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

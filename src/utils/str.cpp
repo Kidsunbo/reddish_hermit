@@ -94,11 +94,14 @@ namespace reddish::utils
         return true;
     }
 
-    std::size_t advance_to_next_line(std::string::const_iterator& it, const std::string::const_iterator& end){
+    std::size_t advance_to_next_line(std::string::const_iterator &it, const std::string::const_iterator &end)
+    {
         std::size_t steps = 0;
-        while(std::distance(it, end) > 1){
-            if(*it == '\r' && *(it+1) == '\n'){
-                it+=2;
+        while (std::distance(it, end) > 1)
+        {
+            if (*it == '\r' && *(it + 1) == '\n')
+            {
+                it += 2;
                 steps += 2;
                 break;
             }
@@ -110,6 +113,9 @@ namespace reddish::utils
 
     boost::outcome_v2::result<std::int64_t> next_item_length(std::string::const_iterator it, std::string::const_iterator end)
     {
+        // if(it == end){
+        //     return boost::system::errc::invalid_argument;
+        // }
         switch (*it)
         {
         case '+':
@@ -123,7 +129,11 @@ namespace reddish::utils
         {
             auto item_start = it;
             auto length = utils::retrieve_length(++it, end);
-            if (length && std::distance(it, end) >= length.value() + 2)
+            if (length && length.value() == -1)
+            {
+                return std::distance(item_start, it);
+            }
+            else if (length && length.value() > 0 && std::distance(it, end) >= length.value() + 2)
             {
                 return std::distance(item_start, it) + length.value() + 2;
             }
@@ -141,7 +151,7 @@ namespace reddish::utils
             {
                 return length.error();
             }
-            std::size_t arr_len = 0;
+            std::size_t arr_len = std::distance(item_start, it);
             for (std::int64_t i = 0; i < length.value(); i++)
             {
                 auto item_len = next_item_length(it, end);
@@ -152,7 +162,7 @@ namespace reddish::utils
                 arr_len += item_len.value();
                 it += item_len.value();
             }
-            return std::distance(item_start, it) + arr_len;
+            return arr_len;
         }
         default:
             return boost::system::errc::invalid_argument;
