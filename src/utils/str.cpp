@@ -113,9 +113,9 @@ namespace reddish::utils
 
     boost::outcome_v2::result<std::int64_t> next_item_length(std::string::const_iterator it, std::string::const_iterator end)
     {
-        // if(it == end){
-        //     return boost::system::errc::invalid_argument;
-        // }
+        if(it == end){
+            return boost::system::errc::invalid_argument;
+        }
         switch (*it)
         {
         case '+':

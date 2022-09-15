@@ -133,6 +133,9 @@ namespace reddish::resp
 
     Result::ResultType Result::type() const noexcept
     {
+        if(val.length() == 0){
+            return ResultType::Unknown;
+        }
         switch (val[0])
         {
         case '+':
