@@ -164,6 +164,12 @@ TEST(ProtocolTest, EmptyResultClass)
   }
 }
 
+
+TEST(ProtocolTest, FromStringClass){
+
+
+}
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
