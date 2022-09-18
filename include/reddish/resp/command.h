@@ -1,9 +1,9 @@
-#ifndef REDDISH_HERMIT_PROTO_COMMAND_H
-#define REDDISH_HERMIT_PROTO_COMMAND_H
+#ifndef REDDISH_HERMIT_RESP_COMMAND_H
+#define REDDISH_HERMIT_RESP_COMMAND_H
 
 #include <string_view>
 
-namespace reddish::proto
+namespace reddish::resp
 {
     enum class Command
     {
@@ -86,6 +86,6 @@ namespace reddish::proto
         }
     }
 
-} // namespace reddish::proto
+} // namespace reddish::resp
 
 #endif
