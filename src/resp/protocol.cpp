@@ -203,7 +203,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             std::int32_t result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -246,7 +246,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             std::int64_t result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -289,7 +289,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             std::uint32_t result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -332,7 +332,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             std::uint64_t result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -414,7 +414,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             float result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -457,7 +457,7 @@ namespace reddish::resp
         case ResultType::Integer:
         {
             double result;
-            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 3, result);
+            [[maybe_unused]] auto [ignore, ec] = std::from_chars(val.data() + 1, val.data() + val.length() - 2, result);
             if (ec != std::errc{})
             {
                 return boost::system::errc::invalid_argument;
@@ -603,7 +603,7 @@ namespace reddish::resp
                 case ':':
                 {
                     std::int64_t result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 2, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -670,7 +670,7 @@ namespace reddish::resp
                 case ':':
                 {
                     std::uint64_t result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 2, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -737,7 +737,7 @@ namespace reddish::resp
                 case ':':
                 {
                     float result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 2, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
@@ -804,7 +804,7 @@ namespace reddish::resp
                 case ':':
                 {
                     double result;
-                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 3, result);
+                    [[maybe_unused]] auto [ignore, ec] = std::from_chars(it.base() + 1, it.base() + length.value() - 2, result);
                     if (ec != std::errc{})
                     {
                         return boost::system::errc::invalid_argument;
