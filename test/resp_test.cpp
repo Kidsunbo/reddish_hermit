@@ -166,7 +166,7 @@ TEST(ProtocolTest, EmptyResultClass)
 
 
 TEST(ProtocolTest, FromStringCopyClass){
-  std::string array_str = "*5\r\n$3\r\nabc\r\n:1\r\n- Err This is a error test\r\n+123123\r\n*3\r\n:1\r\n*2\r\n$1\r\nh\r\n:10\r\n+ping\r\n";
+  std::string array_str = "*5\r\n$3\r\nabc\r\n:1\r\n- Err This is a error test\r\n+123123\r\n*3\r\n$-1\r\n*2\r\n$1\r\nh\r\n:10\r\n+ping\r\n";
   auto result = Result::from_string(array_str);
   ASSERT_FALSE(result.has_error());
   auto v = result.value().as_vector();
@@ -180,11 +180,11 @@ TEST(ProtocolTest, FromStringCopyClass){
   v = v.value().at(4).as_vector();
   ASSERT_FALSE(v.has_error());
   ASSERT_EQ(v.value().size(), 3);
+  ASSERT_TRUE(v.value().at(0).is_null());
+  ASSERT_FALSE(v.value().at(0).as_string().has_error());
+  ASSERT_EQ(v.value().at(0).as_string().value(), "nil");
+  ASSERT_TRUE(v.value().at(0).as_boolean().has_error());
   ASSERT_EQ(v.value().at(2).as_string().value(), "ping");
-
-
-
-
 }
 
 int main(int argc, char **argv)
