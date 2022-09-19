@@ -873,6 +873,7 @@ namespace reddish::resp
                     if (utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "true\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "1\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "t\r\n"))
                     {
                         vec.push_back(true);
+                        break;
                     }
                     vec.push_back(false);
                     break;
@@ -886,6 +887,7 @@ namespace reddish::resp
                         if (utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "true") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "1") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "t"))
                         {
                             vec.push_back(true);
+                            break;
                         }
                         vec.push_back(false);
                     }

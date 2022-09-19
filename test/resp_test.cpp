@@ -187,6 +187,19 @@ TEST(ProtocolTest, FromStringCopyClass){
   ASSERT_EQ(v.value().at(2).as_string().value(), "ping");
 }
 
+TEST(ProtocolTest, FromStringCopy2Class){
+  std::string array_str = "*5\r\n+true\r\n:1\r\n$1\r\nt\r\n+false\r\n:0\r\n";
+  auto result = Result::from_string(array_str);
+  ASSERT_FALSE(result.has_error());
+  auto v = result.value().as_boolean_vector();
+  ASSERT_FALSE(v.has_error());
+  ASSERT_TRUE(v.value().at(0));
+  ASSERT_TRUE(v.value().at(1));
+  ASSERT_TRUE(v.value().at(2));
+  ASSERT_FALSE(v.value().at(3));
+  ASSERT_FALSE(v.value().at(4));
+}
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
