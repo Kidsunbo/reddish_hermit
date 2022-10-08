@@ -70,12 +70,12 @@ boost::asio::awaitable<void> co_main_http()
     Connection conn(any_ctx, 5);
     
     std::vector<std::string> vec = {
-        "github.com",
-        "www.baidu.com",
-        "www.google.com",
-        "www.youtube.com",
-        "www.163.com",
-
+        // "github.com",
+        // "www.baidu.com",
+        // "www.google.com",
+        // "www.youtube.com",
+        // "www.163.com",
+        "fxg.jinritemai.com"
     };
     for(auto& item : vec){
         auto s = co_await get(conn, item);
@@ -88,7 +88,7 @@ boost::asio::awaitable<void> co_main_redis(){
     Connection conn(ctx, 5);
 
     co_await conn.connect_with_host_name("host.docker.internal", 6379);
-    co_await conn.write("*2\r\n$4\r\nPING\r\nHey\r\n");
+    co_await conn.write("*2\r\n$4\r\nPING\r\n$3\r\nHey\r\n");
     std::string s;
     boost::asio::dynamic_string_buffer buf(s);
     auto n = co_await conn.read_until(buf, "\r\n");
@@ -105,8 +105,8 @@ boost::asio::awaitable<void> co_main_redis(){
 int main()
 {
     kie::context ctx;
-    // boost::asio::co_spawn(ctx.get_one(), co_main_http(), boost::asio::detached);
-    boost::asio::co_spawn(ctx.get_one(), co_main_redis(), boost::asio::detached);
+    boost::asio::co_spawn(ctx.get_one(), co_main_http(), boost::asio::detached);
+    // boost::asio::co_spawn(ctx.get_one(), co_main_redis(), boost::asio::detached);
     ctx.release_guard();
     ctx.run();
     return 0;

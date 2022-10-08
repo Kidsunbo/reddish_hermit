@@ -7,30 +7,55 @@ TEST(ProtocolTest, RequestClass)
 {
   auto v = Request(Command::Get, "hello");
   ASSERT_EQ(v.to_string(), "*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n");
+  ASSERT_EQ(v.to_string_view(), "*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n");
+
   v = Request(Command::Set, "key", 10);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+
   v = Request(Command::Set, "key", 100'000'000'000'000'000);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$18\r\n100000000000000000\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$18\r\n100000000000000000\r\n");
+
   v = Request(Command::Set, "key", 10U);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+
   v = Request(Command::Set, "key", 100'000'000'000'000'000U);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$18\r\n100000000000000000\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$18\r\n100000000000000000\r\n");
+
   v = Request(Command::Set, "key", -10);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$3\r\n-10\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$3\r\n-10\r\n");
+
   v = Request(Command::Set, "key", -100'000'000'000'000'000);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$19\r\n-100000000000000000\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$19\r\n-100000000000000000\r\n");
+
   v = Request(Command::Set, "key", 20.1);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$4\r\n20.1\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$4\r\n20.1\r\n");
+
   v = Request(Command::Set, "key", 3.141596f);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$6\r\n3.1416\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$6\r\n3.1416\r\n");
+
   v = Request(Command::Set, "key", 3.14159265359L);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$7\r\n3.14159\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$7\r\n3.14159\r\n");
+
   v = Request(Command::Set, "key", static_cast<unsigned short>(10));
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$2\r\n10\r\n");
+
   v = Request(Command::Set, "key", static_cast<short>(-10));
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$3\r\n-10\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$3\r\n-10\r\n");
+
   v = Request(Command::Set, "key", true);
   ASSERT_EQ(v.to_string(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$4\r\ntrue\r\n");
+  ASSERT_EQ(v.to_string_view(), "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$4\r\ntrue\r\n");
 }
 
 TEST(ProtocolTest, EmptyResultClass)
@@ -139,20 +164,20 @@ TEST(ProtocolTest, EmptyResultClass)
     ASSERT_EQ(v[0], "hello world");
   }
   {
-    auto v = empty_result.as_int64_vector({1,2,3,4});
+    auto v = empty_result.as_int64_vector({1, 2, 3, 4});
     ASSERT_EQ(v.size(), 4);
   }
   {
-    auto v = empty_result.as_uint64_vector({3,4,5,6});
+    auto v = empty_result.as_uint64_vector({3, 4, 5, 6});
     ASSERT_EQ(v.size(), 4);
   }
   {
-    auto v = empty_result.as_float_vector({1.1,2.2,3.3});
+    auto v = empty_result.as_float_vector({1.1, 2.2, 3.3});
     ASSERT_EQ(v.size(), 3);
     ASSERT_FLOAT_EQ(v[0], 1.1);
   }
   {
-    auto v = empty_result.as_double_vector({1.2,3.4});
+    auto v = empty_result.as_double_vector({1.2, 3.4});
     ASSERT_EQ(v.size(), 2);
     ASSERT_DOUBLE_EQ(v[0], 1.2);
   }
@@ -164,30 +189,42 @@ TEST(ProtocolTest, EmptyResultClass)
   }
 }
 
-
-TEST(ProtocolTest, FromStringCopyClass){
+TEST(ProtocolTest, FromStringCopyClass)
+{
   std::string array_str = "*5\r\n$3\r\nabc\r\n:1\r\n- Err This is a error test\r\n+123123\r\n*3\r\n$-1\r\n*2\r\n$1\r\nh\r\n:10\r\n+ping\r\n";
   auto result = Result::from_string(array_str);
   ASSERT_FALSE(result.has_error());
-  auto v = result.value().as_vector();
-  ASSERT_FALSE(v.has_error());
-  ASSERT_EQ(v.value().size(), 5);
-  ASSERT_EQ(v.value().at(0).as_string(""), "abc");
-  ASSERT_FALSE(v.value().at(1).as_int64().has_error());
-  ASSERT_EQ(v.value().at(1).as_int64().value(), 1);
-  ASSERT_EQ(v.value().at(2).as_string(""), " Err This is a error test");
-  ASSERT_EQ(v.value().at(3).as_int32(0), 123123);
-  v = v.value().at(4).as_vector();
-  ASSERT_FALSE(v.has_error());
-  ASSERT_EQ(v.value().size(), 3);
-  ASSERT_TRUE(v.value().at(0).is_null());
-  ASSERT_FALSE(v.value().at(0).as_string().has_error());
-  ASSERT_EQ(v.value().at(0).as_string().value(), "nil");
-  ASSERT_TRUE(v.value().at(0).as_boolean().has_error());
-  ASSERT_EQ(v.value().at(2).as_string().value(), "ping");
+  {
+    auto v = result.value().as_vector();
+    ASSERT_FALSE(v.has_error());
+    ASSERT_EQ(v.value().size(), 5);
+    ASSERT_EQ(v.value().at(0).as_string(""), "abc");
+    ASSERT_FALSE(v.value().at(1).as_int64().has_error());
+    ASSERT_EQ(v.value().at(1).as_int64().value(), 1);
+    ASSERT_EQ(v.value().at(2).as_string(""), " Err This is a error test");
+    ASSERT_EQ(v.value().at(3).as_int32(0), 123123);
+  }
+  {
+    auto v = result.value().as_vector().value().at(4).as_vector();
+    ASSERT_FALSE(v.has_error());
+    ASSERT_EQ(v.value().size(), 3);
+    ASSERT_TRUE(v.value().at(0).is_null());
+    ASSERT_FALSE(v.value().at(0).as_string().has_error());
+    ASSERT_EQ(v.value().at(0).as_string().value(), "nil");
+    ASSERT_TRUE(v.value().at(0).as_boolean().has_error());
+    ASSERT_EQ(v.value().at(2).as_string().value(), "ping");
+  }
+  {
+    auto v = result.value().as_string_vector();
+    ASSERT_TRUE(v.has_error());
+    std::string string_array = "*5\r\n:1\r\n+222\r\n-Error hello\r\n$5\r\nhello\r\n:hello\r\n";
+    auto string_result = Result::from_string(string_array);
+    ASSERT_TRUE(string_result.has_error());
+  }
 }
 
-TEST(ProtocolTest, FromStringCopy2Class){
+TEST(ProtocolTest, FromStringCopy2Class)
+{
   std::string array_str = "*5\r\n+true\r\n:1\r\n$1\r\nt\r\n+false\r\n:0\r\n";
   auto result = Result::from_string(array_str);
   ASSERT_FALSE(result.has_error());
@@ -198,6 +235,33 @@ TEST(ProtocolTest, FromStringCopy2Class){
   ASSERT_TRUE(v.value().at(2));
   ASSERT_FALSE(v.value().at(3));
   ASSERT_FALSE(v.value().at(4));
+}
+
+TEST(ProtocolTest, FromStringWithError)
+{
+  std::string array_str = "*5\r";
+  auto result = Result::from_string(array_str);
+  ASSERT_TRUE(result.has_error());
+
+  auto result = Result::from_string(std::move(array_str));
+  ASSERT_TRUE(result.has_error());
+  ASSERT_EQ(array_str, "*5\r"); // make sure the array_str is not moved when parsing failed.
+}
+
+TEST(ProtocolTest, NotPossiblePath)
+{
+  {
+    std::string s = "&10\r\n";
+    auto result = Result::from_string(s);
+    ASSERT_FALSE(result.has_error());
+    ASSERT_EQ(result.value().type(), Result::ResultType::Unknown);
+    ASSERT_FALSE(result.value().is_null());
+  }
+  {
+    auto result = Result::from_string(":10\r\n");
+    ASSERT_FALSE(result.has_error());
+    ASSERT_FALSE(result.value().is_null());
+  }
 }
 
 int main(int argc, char **argv)
