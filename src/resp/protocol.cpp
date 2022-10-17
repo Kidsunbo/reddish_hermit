@@ -111,7 +111,7 @@ namespace reddish::resp
 
     boost::outcome_v2::result<Result> Result::from_string(const std::string &s)
     {
-        if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
+        if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
             return boost::system::errc::invalid_argument;
         }
@@ -122,7 +122,7 @@ namespace reddish::resp
 
     boost::outcome_v2::result<Result> Result::from_string(std::string &&s)
     {
-        if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
+        if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
             return boost::system::errc::invalid_argument;
         }

@@ -70,12 +70,11 @@ boost::asio::awaitable<void> co_main_http()
     Connection conn(any_ctx, 5);
     
     std::vector<std::string> vec = {
-        // "github.com",
-        // "www.baidu.com",
-        // "www.google.com",
-        // "www.youtube.com",
-        // "www.163.com",
-        "fxg.jinritemai.com"
+        "github.com",
+        "www.baidu.com",
+        "www.google.com",
+        "www.youtube.com",
+        "www.163.com",
     };
     for(auto& item : vec){
         auto s = co_await get(conn, item);
@@ -106,7 +105,7 @@ int main()
 {
     kie::context ctx;
     boost::asio::co_spawn(ctx.get_one(), co_main_http(), boost::asio::detached);
-    // boost::asio::co_spawn(ctx.get_one(), co_main_redis(), boost::asio::detached);
+    boost::asio::co_spawn(ctx.get_one(), co_main_redis(), boost::asio::detached);
     ctx.release_guard();
     ctx.run();
     return 0;

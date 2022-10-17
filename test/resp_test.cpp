@@ -221,46 +221,40 @@ TEST(ProtocolTest, FromStringCopyClass)
     auto string_result = Result::from_string(string_array);
     ASSERT_TRUE(string_result.has_error());
   }
-}
-
-TEST(ProtocolTest, FromStringCopy2Class)
-{
-  std::string array_str = "*5\r\n+true\r\n:1\r\n$1\r\nt\r\n+false\r\n:0\r\n";
-  auto result = Result::from_string(array_str);
-  ASSERT_FALSE(result.has_error());
-  auto v = result.value().as_boolean_vector();
-  ASSERT_FALSE(v.has_error());
-  ASSERT_TRUE(v.value().at(0));
-  ASSERT_TRUE(v.value().at(1));
-  ASSERT_TRUE(v.value().at(2));
-  ASSERT_FALSE(v.value().at(3));
-  ASSERT_FALSE(v.value().at(4));
-}
-
-TEST(ProtocolTest, FromStringWithError)
-{
-  std::string array_str = "*5\r";
-  auto result = Result::from_string(array_str);
-  ASSERT_TRUE(result.has_error());
-
-  auto result = Result::from_string(std::move(array_str));
-  ASSERT_TRUE(result.has_error());
-  ASSERT_EQ(array_str, "*5\r"); // make sure the array_str is not moved when parsing failed.
-}
-
-TEST(ProtocolTest, NotPossiblePath)
-{
   {
-    std::string s = "&10\r\n";
-    auto result = Result::from_string(s);
-    ASSERT_FALSE(result.has_error());
-    ASSERT_EQ(result.value().type(), Result::ResultType::Unknown);
-    ASSERT_FALSE(result.value().is_null());
+    std::string array_str = "*5\r";
+    auto result = Result::from_string(array_str);
+    ASSERT_TRUE(result.has_error());
+    ASSERT_EQ(array_str, "*5\r"); // make sure the array_str is not moved.
   }
   {
-    auto result = Result::from_string(":10\r\n");
+    std::string array_str = "*5\r\n+true\r\n:1\r\n$1\r\nt\r\n+false\r\n:0\r\n";
+    auto result = Result::from_string(array_str);
     ASSERT_FALSE(result.has_error());
-    ASSERT_FALSE(result.value().is_null());
+    auto v = result.value().as_boolean_vector();
+    ASSERT_FALSE(v.has_error());
+    ASSERT_TRUE(v.value().at(0));
+    ASSERT_TRUE(v.value().at(1));
+    ASSERT_TRUE(v.value().at(2));
+    ASSERT_FALSE(v.value().at(3));
+    ASSERT_FALSE(v.value().at(4));
+  }
+}
+
+TEST(ProtocolTest, FromStringMoveClass)
+{
+  {
+    std::string array_str = "*5\r";
+    auto result = Result::from_string(std::move(array_str));
+    ASSERT_TRUE(result.has_error());
+    ASSERT_EQ(array_str, "*5\r"); // make sure the array_str is not moved when parsing failed.
+  }
+
+  {
+    std::string array_str = ":5\r\n";
+    auto result = Result::from_string(std::move(array_str));
+    ASSERT_FALSE(result.has_error());
+    ASSERT_EQ(array_str, ""); // make sure the array_str is moved when parsing success.
   }
 }
 
