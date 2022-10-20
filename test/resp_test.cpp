@@ -219,7 +219,12 @@ TEST(ProtocolTest, FromStringCopyClass)
     ASSERT_TRUE(v.has_error());
     std::string string_array = "*5\r\n:1\r\n+222\r\n-Error hello\r\n$5\r\nhello\r\n:hello\r\n";
     auto string_result = Result::from_string(string_array);
-    ASSERT_TRUE(string_result.has_error());
+    ASSERT_FALSE(string_result.has_error());
+    ASSERT_EQ(string_result.value().type(), Result::ResultType::Array);
+    ASSERT_FALSE(string_result.value().as_vector().has_error());
+    ASSERT_EQ(string_result.value().as_vector().value().at(4).type(), Result::ResultType::Integer);
+    ASSERT_TRUE(string_result.value().as_vector().value().at(4).as_int64().has_error());
+    ASSERT_FALSE(string_result.value().as_vector().value().at(4).as_string().has_error());
   }
   {
     std::string array_str = "*5\r";
