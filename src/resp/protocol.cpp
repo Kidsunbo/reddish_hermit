@@ -1056,4 +1056,13 @@ namespace reddish::resp
         return default_value;
     }
 
+    boost::asio::awaitable<boost::outcome_v2::result<IntResult>> IntResult::create_from_connection(network::Connection &conn){
+        std::string buf_container;
+        boost::asio::dynamic_string_buffer buf(buf_container);
+        auto result = co_await conn.read_until(buf, "\r\n");
+        if(result.has_error()){
+            co_return result.error();
+        }
+    }
+
 } // namespace reddish::resp
