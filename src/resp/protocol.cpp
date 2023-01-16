@@ -11,7 +11,7 @@ namespace reddish::resp
     concept specific_result_concept = requires(T t, network::Connection conn)
     {
         typename T::value_type;
-        {T::create_from_connection(conn)} -> std::same_as<boost::outcome_v2::result<T>>;
+        {T::create_from_connection(conn)} -> std::same_as<boost::asio::awaitable<boost::outcome_v2::result<T>>>;
         {t.result()} -> std::same_as<boost::outcome_v2::result<typename T::value_type> &>;
         {t.result(std::declval<typename T::value_type>())} -> std::same_as<typename T::value_type>;
     };
