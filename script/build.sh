@@ -28,5 +28,5 @@ cd ${WORKSPACE}/build
 cmake ${WORKSPACE} --preset ${preset}
 
 echo "【KIE】Build"
-cd ${WORKSPACE}/build
-cmake --build . --config ${BUILD_TYPE}
+cd ${WORKSPACE}
+cmake --build --preset ${preset}
