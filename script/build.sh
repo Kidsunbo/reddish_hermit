@@ -1,8 +1,8 @@
 WORKSPACE=$1
 BUILD_TYPE=$2
 declare -A PresetMap
-PresetMap[Debug] = "debug"
-PresetMap[Release] = "release"
+PresetMap[Debug] = debug
+PresetMap[Release] = release
 
 
 echo "【KIE】Create Build Environment"
