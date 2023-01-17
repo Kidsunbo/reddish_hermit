@@ -1,5 +1,7 @@
 WORKSPACE=$1
 BUILD_TYPE=$2
+preset=$(echo "$BUILD_TYPE" | awk '{print tolower($0)}')
+
 
 echo "【KIE】Create Build Environment"
 cmake -E make_directory ${WORKSPACE}/build
@@ -23,8 +25,8 @@ conan install .. --build=missing -pr:b=default -pr:h=default
 
 echo "【KIE】Configure CMake"
 cd ${WORKSPACE}/build
-cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake
+cmake ${WORKSPACE} --preset ${preset}
 
 echo "【KIE】Build"
-cd ${WORKSPACE}/build
-cmake --build . --config ${BUILD_TYPE}
+cd ${WORKSPACE}
+cmake --build --preset ${preset}

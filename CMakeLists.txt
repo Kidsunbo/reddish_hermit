@@ -12,7 +12,7 @@ target_include_directories(reddish_hermit PUBLIC include)
 target_link_libraries(reddish_hermit PUBLIC kie_toolbox::kie_toolbox)
 
 
-option(ENABLE_TEST "if enable test for reddish_hermit" OFF)
+option(ENABLE_TEST "if enable test for reddish_hermit" ON)
 if(ENABLE_TEST)
     include(CTest)
     add_subdirectory(test)

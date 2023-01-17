@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <charconv>
+
 namespace reddish::resp
 {
 
@@ -10,15 +11,9 @@ namespace reddish::resp
     concept specific_result_concept = requires(T t, network::Connection conn)
     {
         typename T::value_type;
-        {
-            T::create_from_connection(conn)
-            } -> std::same_as<boost::outcome_v2::result<T>>;
-        {
-            t.result()
-            } -> std::same_as<boost::outcome_v2::result<typename T::value_type> &>;
-        {
-            t.result(std::declval<typename T::value_type>())
-            } -> std::same_as<typename T::value_type>;
+        {T::create_from_connection(conn)} -> std::same_as<boost::asio::awaitable<boost::outcome_v2::result<T>>>;
+        {t.result()} -> std::same_as<boost::outcome_v2::result<typename T::value_type> &>;
+        {t.result(std::declval<typename T::value_type>())} -> std::same_as<typename T::value_type>;
     };
 
     static_assert(specific_result_concept<IntResult>, "IntResult does not satisfy the requirement");
@@ -111,7 +106,7 @@ namespace reddish::resp
 
     boost::outcome_v2::result<Result> Result::from_string(const std::string &s)
     {
-        if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
+        if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
             return boost::system::errc::invalid_argument;
         }
@@ -122,7 +117,7 @@ namespace reddish::resp
 
     boost::outcome_v2::result<Result> Result::from_string(std::string &&s)
     {
-        if (s.length() < 3 && (s[s.length() - 2] == '\r' && s[s.length() - 1] == '\n'))
+        if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
             return boost::system::errc::invalid_argument;
         }
@@ -873,6 +868,7 @@ namespace reddish::resp
                     if (utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "true\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "1\r\n") || utils::case_insensitive_equal(std::string_view{it + 1, it + length.value()}, "t\r\n"))
                     {
                         vec.push_back(true);
+                        break;
                     }
                     vec.push_back(false);
                     break;
@@ -886,6 +882,7 @@ namespace reddish::resp
                         if (utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "true") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "1") || utils::case_insensitive_equal(std::string_view{parse_it, parse_it + length.value()}, "t"))
                         {
                             vec.push_back(true);
+                            break;
                         }
                         vec.push_back(false);
                     }
@@ -1057,6 +1054,15 @@ namespace reddish::resp
             return v.value();
         }
         return default_value;
+    }
+
+    boost::asio::awaitable<boost::outcome_v2::result<IntResult>> IntResult::create_from_connection(network::Connection &conn){
+        std::string buf_container;
+        boost::asio::dynamic_string_buffer buf(buf_container);
+        auto result = co_await conn.read_until(buf, "\r\n");
+        if(result.has_error()){
+            co_return result.error();
+        }
     }
 
 } // namespace reddish::resp
