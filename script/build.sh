@@ -23,7 +23,7 @@ conan install .. --build=missing -pr:b=default -pr:h=default
 
 echo "【KIE】Configure CMake"
 cd ${WORKSPACE}/build
-cmake ${WORKSPACE} --preset ${BUILD_TYPE}
+cmake ${WORKSPACE} --preset echo ${BUILD_TYPE} | awk '{print tolower($0)}'
 
 echo "【KIE】Build"
 cd ${WORKSPACE}/build
