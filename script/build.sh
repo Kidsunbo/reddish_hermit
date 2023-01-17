@@ -1,8 +1,6 @@
 WORKSPACE=$1
 BUILD_TYPE=$2
-declare -A PresetMap
-PresetMap[Debug] = debug
-PresetMap[Release] = release
+preset=$(echo "$BUILD_TYPE" | awk '{print tolower($0)}')
 
 
 echo "【KIE】Create Build Environment"
@@ -27,7 +25,7 @@ conan install .. --build=missing -pr:b=default -pr:h=default
 
 echo "【KIE】Configure CMake"
 cd ${WORKSPACE}/build
-cmake ${WORKSPACE} --preset ${PresetMap[${BUILD_TYPE}]}
+cmake ${WORKSPACE} --preset ${preset}
 
 echo "【KIE】Build"
 cd ${WORKSPACE}/build
