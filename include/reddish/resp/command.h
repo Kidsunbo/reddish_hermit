@@ -7,7 +7,7 @@ namespace reddish::resp
 {
     enum class Command
     {
-        //String Command
+        // String Command
         Append,
         Decrease,
         DecreaseBy,
@@ -37,49 +37,49 @@ namespace reddish::resp
         switch (cmd)
         {
         case Command::Append:
-        return "APPEND";
+            return "APPEND";
         case Command::Decrease:
-        return "DECR";
+            return "DECR";
         case Command::DecreaseBy:
-        return "DECRBY";
+            return "DECRBY";
         case Command::Get:
-        return "GET";
+            return "GET";
         case Command::GetDel:
-        return "GETDEL";
+            return "GETDEL";
         case Command::GetEX:
-        return "GETEX";
+            return "GETEX";
         case Command::GetRange:
-        return "GETRANGE";
+            return "GETRANGE";
         case Command::GetSet:
-        return "GETSET";
+            return "GETSET";
         case Command::Increase:
-        return "INCR";
+            return "INCR";
         case Command::IncreaseBy:
-        return "INCRBY";
+            return "INCRBY";
         case Command::IncreaseByFloat:
-        return "INCRBYFLOAT";
+            return "INCRBYFLOAT";
         case Command::LongestCommonString:
-        return "LCS";
+            return "LCS";
         case Command::MGet:
-        return "MGET";
+            return "MGET";
         case Command::MSet:
-        return "MSET";
+            return "MSET";
         case Command::MSetNX:
-        return "MSETNX";
+            return "MSETNX";
         case Command::PSetEX:
-        return "PSETEX";
+            return "PSETEX";
         case Command::Set:
-        return "SET";
+            return "SET";
         case Command::SetEX:
-        return "SETEX";
+            return "SETEX";
         case Command::SetNX:
-        return "SETNX";
+            return "SETNX";
         case Command::SetRange:
-        return "SETRANGE";
+            return "SETRANGE";
         case Command::StrLen:
-        return "STRLEN";
+            return "STRLEN";
         case Command::SubStr:
-        return "SUBSTR";
+            return "SUBSTR";
         default:
             return "UNKNOWN";
             break;

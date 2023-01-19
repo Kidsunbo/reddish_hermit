@@ -12,7 +12,7 @@ namespace reddish::resp
     {
         typename T::value_type;
         {T::create_from_connection(conn)} -> std::same_as<boost::asio::awaitable<boost::outcome_v2::result<T>>>;
-        {t.result()} -> std::same_as<boost::outcome_v2::result<typename T::value_type> &>;
+        {t.result()} -> std::same_as<const boost::outcome_v2::result<typename T::value_type> &>;
         {t.result(std::declval<typename T::value_type>())} -> std::same_as<typename T::value_type>;
     };
 
@@ -1056,6 +1056,8 @@ namespace reddish::resp
         return default_value;
     }
 
+    IntResult::IntResult(IntResult::value_type val):val(val){}
+
     boost::asio::awaitable<boost::outcome_v2::result<IntResult>> IntResult::create_from_connection(network::Connection &conn){
         std::string buf_container;
         boost::asio::dynamic_string_buffer buf(buf_container);
@@ -1063,6 +1065,28 @@ namespace reddish::resp
         if(result.has_error()){
             co_return result.error();
         }
+        std::size_t size = result.value();
+        IntResult::value_type result_int;
+        if(size < 2){
+            co_return boost::system::errc::invalid_argument;
+        }
+        [[maybe_unused]] auto [ignore, ec] = std::from_chars(buf_container.data(), buf_container.data() + size - 2, result_int);
+        if (ec != std::errc{})
+        {
+            co_return boost::system::errc::invalid_argument;
+        }
+        co_return IntResult{result_int};
+    }
+
+    const boost::outcome_v2::result<IntResult::value_type> &IntResult::result() const noexcept{
+        return val;
+    }
+
+    IntResult::value_type IntResult::result(IntResult::value_type defalt_value) const noexcept{
+        if(val.has_value()){
+            return val.value();
+        }
+        return defalt_value;
     }
 
 } // namespace reddish::resp

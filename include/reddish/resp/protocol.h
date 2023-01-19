@@ -152,11 +152,12 @@ namespace reddish::resp
 
     private:
         boost::outcome_v2::result<value_type> val;
+        IntResult(IntResult::value_type val);
 
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<IntResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -173,7 +174,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<StringResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -189,7 +190,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<BoolResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -205,7 +206,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<VectorResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -221,7 +222,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<DoubleResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -237,7 +238,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<DoubleVectorResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -253,7 +254,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<IntVectorResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -269,7 +270,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<StringVectorResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -285,7 +286,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<BoolVectorResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -301,7 +302,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<MapResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -317,7 +318,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<MapStringStringResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -333,7 +334,7 @@ namespace reddish::resp
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<MapStringIntResult>> create_from_connection(network::Connection &conn);
 
-        boost::outcome_v2::result<value_type> &result() const noexcept;
+        const boost::outcome_v2::result<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };

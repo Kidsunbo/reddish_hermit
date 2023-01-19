@@ -27,7 +27,6 @@ namespace reddish::network
         [[nodiscard]] Result<std::size_t> write(std::string_view value);
         [[nodiscard]] Result<std::size_t> read_until(Buffer& buf, std::string_view sep);
         [[nodiscard]] Result<std::size_t> read_exact(Buffer& buf, std::int64_t size);
-        [[nodiscard]] bool is_connected();
         [[nodiscard]] boost::system::error_code close();
 
         ~Connection()noexcept;
