@@ -1056,7 +1056,7 @@ namespace reddish::resp
         return default_value;
     }
 
-    IntResult::IntResult(IntResult::value_type val):val(val){}
+    IntResult::IntResult(const IntResult::value_type& val):val(val){}
 
     boost::asio::awaitable<boost::outcome_v2::result<IntResult>> IntResult::create_from_connection(network::Connection &conn){
         std::string buf_container;
@@ -1066,16 +1066,15 @@ namespace reddish::resp
             co_return result.error();
         }
         std::size_t size = result.value();
-        IntResult::value_type result_int;
-        if(size < 2){
-            co_return boost::system::errc::invalid_argument;
+        auto res = Result::from_string(std::string(buf_container.data(), size));
+        if(res.has_error()){
+            co_return res.error();
         }
-        [[maybe_unused]] auto [ignore, ec] = std::from_chars(buf_container.data(), buf_container.data() + size - 2, result_int);
-        if (ec != std::errc{})
-        {
-            co_return boost::system::errc::invalid_argument;
+        auto int64_res = res.value().as_int64();
+        if(int64_res.has_error()){
+            co_return res.error();
         }
-        co_return IntResult{result_int};
+        co_return IntResult(int64_res.value());
     }
 
     const boost::outcome_v2::result<IntResult::value_type> &IntResult::result() const noexcept{
@@ -1083,6 +1082,38 @@ namespace reddish::resp
     }
 
     IntResult::value_type IntResult::result(IntResult::value_type defalt_value) const noexcept{
+        if(val.has_value()){
+            return val.value();
+        }
+        return defalt_value;
+    }
+
+    StringResult::StringResult(const StringResult::value_type& val):val(val){}
+
+    boost::asio::awaitable<boost::outcome_v2::result<StringResult>> StringResult::create_from_connection(network::Connection &conn){
+        std::string buf_container;
+        boost::asio::dynamic_string_buffer buf(buf_container);
+        auto result = co_await conn.read_until(buf, "\r\n");
+        if(result.has_error()){
+            co_return result.error();
+        }
+        std::size_t size = result.value();
+        auto res = Result::from_string(std::string(buf_container.data(), size));
+        if(res.has_error()){
+            co_return res.error();
+        }
+        auto string_res = res.value().as_string();
+        if(string_res.has_error()){
+            co_return res.error();
+        }
+        co_return StringResult(string_res.value());
+    }
+
+    const boost::outcome_v2::result<StringResult::value_type> &StringResult::result() const noexcept{
+        return val;
+    }
+
+    StringResult::value_type StringResult::result(StringResult::value_type defalt_value) const noexcept{
         if(val.has_value()){
             return val.value();
         }

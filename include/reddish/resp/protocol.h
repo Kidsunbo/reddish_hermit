@@ -152,7 +152,7 @@ namespace reddish::resp
 
     private:
         boost::outcome_v2::result<value_type> val;
-        IntResult(IntResult::value_type val);
+        IntResult(const IntResult::value_type& val);
 
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<IntResult>> create_from_connection(network::Connection &conn);
@@ -170,6 +170,7 @@ namespace reddish::resp
 
     private:
         boost::outcome_v2::result<value_type> val;
+        StringResult(const StringResult::value_type& val);
 
     public:
         static boost::asio::awaitable<boost::outcome_v2::result<StringResult>> create_from_connection(network::Connection &conn);
