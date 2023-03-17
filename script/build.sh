@@ -14,14 +14,11 @@ pip install conan
 
 
 echo "【KIE】Configure Conan"
-conan profile new default --detect &&
-conan profile update settings.compiler.libcxx=libstdc++11 default &&
-conan profile update settings.build_type=${BUILD_TYPE} default &&
-conan remote add kie-kies https://conan.cloudsmith.io/kie/kies/
+conan profile detect
 
 echo "【KIE】Install Dependency"
 cd ${WORKSPACE}/build
-conan install .. --build=missing -pr:b=default -pr:h=default
+conan install .. --build=missing -s build_type=${BUILD_TYPE}
 
 echo "【KIE】Configure CMake"
 cd ${WORKSPACE}/build
