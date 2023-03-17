@@ -5,7 +5,8 @@
 #include <map>
 #include <set>
 #include "command.h"
-#include "../network/connection.h"
+#include "reddish/network/connection.h"
+#include "reddish/common/return_type.h"
 
 #include <boost/outcome.hpp>
 
@@ -25,42 +26,42 @@ namespace reddish::resp
             Array,
         };
 
-        static boost::outcome_v2::result<Result> from_string(const std::string& s);
-        static boost::outcome_v2::result<Result> from_string(std::string&& s);
+        static SyncResult<Result> from_string(const std::string& s);
+        static SyncResult<Result> from_string(std::string&& s);
 
         ResultType type() const noexcept;
 
         bool is_null() const noexcept;
 
-        boost::outcome_v2::result<std::string> as_string() const noexcept;
+        SyncResult<std::string> as_string() const noexcept;
 
-        boost::outcome_v2::result<std::int32_t> as_int32() const noexcept;
+        SyncResult<std::int32_t> as_int32() const noexcept;
 
-        boost::outcome_v2::result<std::int64_t> as_int64() const noexcept;
+        SyncResult<std::int64_t> as_int64() const noexcept;
 
-        boost::outcome_v2::result<std::uint32_t> as_uint32() const noexcept;
+        SyncResult<std::uint32_t> as_uint32() const noexcept;
 
-        boost::outcome_v2::result<std::uint64_t> as_uint64() const noexcept;
+        SyncResult<std::uint64_t> as_uint64() const noexcept;
 
-        boost::outcome_v2::result<bool> as_boolean() const noexcept;
+        SyncResult<bool> as_boolean() const noexcept;
 
-        boost::outcome_v2::result<float> as_float() const noexcept;
+        SyncResult<float> as_float() const noexcept;
 
-        boost::outcome_v2::result<double> as_double() const noexcept;
+        SyncResult<double> as_double() const noexcept;
 
-        boost::outcome_v2::result<std::vector<Result>> as_vector() const noexcept;
+        SyncResult<std::vector<Result>> as_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::string>> as_string_vector() const noexcept;
+        SyncResult<std::vector<std::string>> as_string_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::int64_t>> as_int64_vector() const noexcept;
+        SyncResult<std::vector<std::int64_t>> as_int64_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<std::uint64_t>> as_uint64_vector() const noexcept;
+        SyncResult<std::vector<std::uint64_t>> as_uint64_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<float>> as_float_vector() const noexcept;
+        SyncResult<std::vector<float>> as_float_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<double>> as_double_vector() const noexcept;
+        SyncResult<std::vector<double>> as_double_vector() const noexcept;
 
-        boost::outcome_v2::result<std::vector<bool>> as_boolean_vector() const noexcept;
+        SyncResult<std::vector<bool>> as_boolean_vector() const noexcept;
 
         std::string as_string(std::string default_value) const noexcept;
 
@@ -100,13 +101,13 @@ namespace reddish::resp
         using value_type = std::int64_t;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
         IntResult(const IntResult::value_type& val);
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<IntResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<IntResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -118,13 +119,13 @@ namespace reddish::resp
         using value_type = std::string;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
         StringResult(const StringResult::value_type& val);
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<StringResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<StringResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -135,12 +136,12 @@ namespace reddish::resp
         using value_type = bool;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<BoolResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<BoolResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -151,12 +152,12 @@ namespace reddish::resp
         using value_type = std::vector<Result>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<VectorResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<VectorResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -167,12 +168,12 @@ namespace reddish::resp
         using value_type = double;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<DoubleResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<DoubleResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -183,12 +184,12 @@ namespace reddish::resp
         using value_type = std::vector<double>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<DoubleVectorResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<DoubleVectorResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -199,12 +200,12 @@ namespace reddish::resp
         using value_type = std::vector<std::int64_t>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<IntVectorResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<IntVectorResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -215,12 +216,12 @@ namespace reddish::resp
         using value_type = std::vector<std::string>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<StringVectorResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<StringVectorResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -231,12 +232,12 @@ namespace reddish::resp
         using value_type = std::vector<bool>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<BoolVectorResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<BoolVectorResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -247,12 +248,12 @@ namespace reddish::resp
         using value_type = std::map<std::string, Result>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<MapResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<MapResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -263,12 +264,12 @@ namespace reddish::resp
         using value_type = std::map<std::string, std::string>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<MapStringStringResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<MapStringStringResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };
@@ -279,12 +280,12 @@ namespace reddish::resp
         using value_type = std::map<std::string, std::int64_t>;
 
     private:
-        boost::outcome_v2::result<value_type> val;
+        SyncResult<value_type> val;
 
     public:
-        static boost::asio::awaitable<boost::outcome_v2::result<MapStringIntResult>> create_from_connection(network::Connection &conn);
+        static AsyncResult<MapStringIntResult> create_from_connection(network::Connection &conn);
 
-        const boost::outcome_v2::result<value_type> &result() const noexcept;
+        const SyncResult<value_type> &result() const noexcept;
 
         value_type result(value_type defalt_value) const noexcept;
     };

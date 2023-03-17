@@ -12,7 +12,7 @@ namespace reddish::network
     Connection::Connection(boost::asio::io_context&& ctx, int timeout):Connection(ctx.get_executor(), timeout){}
 
 
-    Connection::Result<boost::asio::ip::tcp::endpoint> Connection::connect_with_host_name(std::string_view host, unsigned short port)
+    AsyncResult<boost::asio::ip::tcp::endpoint> Connection::connect_with_host_name(std::string_view host, unsigned short port)
     {
         boost::system::error_code ec;
         net::ip::tcp::resolver resolver(ctx);
@@ -57,7 +57,7 @@ namespace reddish::network
         }
     }
 
-    Connection::Result<boost::asio::ip::tcp::endpoint> Connection::connect_with_ip(const std::string &ip, unsigned short port)
+    AsyncResult<boost::asio::ip::tcp::endpoint> Connection::connect_with_ip(const std::string &ip, unsigned short port)
     {
         boost::system::error_code ec;
 
@@ -90,7 +90,7 @@ namespace reddish::network
         }
     }
 
-    Connection::Result<std::size_t> Connection::write(std::string_view value){
+    AsyncResult<std::size_t> Connection::write(std::string_view value){
         boost::system::error_code ec;
 
         if(timeout > 0){
@@ -114,7 +114,7 @@ namespace reddish::network
     }
 
 
-    Connection::Result<std::size_t> Connection::read_until(Buffer& buf, std::string_view sep){
+    AsyncResult<std::size_t> Connection::read_until(Buffer& buf, std::string_view sep){
         boost::system::error_code ec;
         if(timeout > 0){
             timer.expires_after(std::chrono::seconds(timeout));
@@ -135,7 +135,7 @@ namespace reddish::network
         }
     }
 
-    Connection::Result<std::size_t> Connection::read_exact(Buffer& buf, std::int64_t size){
+    AsyncResult<std::size_t> Connection::read_exact(Buffer& buf, std::int64_t size){
         if(size == 0){
             co_return 0;
         }

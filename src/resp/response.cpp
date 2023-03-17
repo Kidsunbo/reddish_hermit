@@ -11,8 +11,8 @@ namespace reddish::resp
     concept specific_result_concept = requires(T t, network::Connection conn)
     {
         typename T::value_type;
-        {T::create_from_connection(conn)} -> std::same_as<boost::asio::awaitable<boost::outcome_v2::result<T>>>;
-        {t.result()} -> std::same_as<const boost::outcome_v2::result<typename T::value_type> &>;
+        {T::create_from_connection(conn)} -> std::same_as<AsyncResult<T>>;
+        {t.result()} -> std::same_as<const SyncResult<typename T::value_type> &>;
         {t.result(std::declval<typename T::value_type>())} -> std::same_as<typename T::value_type>;
     };
 
@@ -29,7 +29,7 @@ namespace reddish::resp
     static_assert(specific_result_concept<MapStringStringResult>, "MapStringStringResult does not satisfy the requirement");
     static_assert(specific_result_concept<MapStringIntResult>, "MapStringIntResult does not satisfy the requirement");
 
-    boost::outcome_v2::result<Result> Result::from_string(const std::string &s)
+    SyncResult<Result> Result::from_string(const std::string &s)
     {
         if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
@@ -40,7 +40,7 @@ namespace reddish::resp
         return result;
     }
 
-    boost::outcome_v2::result<Result> Result::from_string(std::string &&s)
+    SyncResult<Result> Result::from_string(std::string &&s)
     {
         if (s.length() < 3 || (s[s.length() - 2] != '\r' || s[s.length() - 1] != '\n'))
         {
@@ -85,7 +85,7 @@ namespace reddish::resp
         return false;
     }
 
-    boost::outcome_v2::result<std::string> Result::as_string() const noexcept
+    SyncResult<std::string> Result::as_string() const noexcept
     {
         switch (type())
         {
@@ -111,7 +111,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<std::int32_t> Result::as_int32() const noexcept
+    SyncResult<std::int32_t> Result::as_int32() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -154,7 +154,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<std::int64_t> Result::as_int64() const noexcept
+    SyncResult<std::int64_t> Result::as_int64() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -197,7 +197,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<std::uint32_t> Result::as_uint32() const noexcept
+    SyncResult<std::uint32_t> Result::as_uint32() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -240,7 +240,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<std::uint64_t> Result::as_uint64() const noexcept
+    SyncResult<std::uint64_t> Result::as_uint64() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -283,7 +283,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<bool> Result::as_boolean() const noexcept
+    SyncResult<bool> Result::as_boolean() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -322,7 +322,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<float> Result::as_float() const noexcept
+    SyncResult<float> Result::as_float() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -365,7 +365,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<double> Result::as_double() const noexcept
+    SyncResult<double> Result::as_double() const noexcept
     {
         if (type() == ResultType::Array || type() == ResultType::Error)
         {
@@ -408,7 +408,7 @@ namespace reddish::resp
         }
     }
 
-    boost::outcome_v2::result<std::vector<Result>> Result::as_vector() const noexcept
+    SyncResult<std::vector<Result>> Result::as_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -443,7 +443,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<std::string>> Result::as_string_vector() const noexcept
+    SyncResult<std::vector<std::string>> Result::as_string_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -498,7 +498,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<std::int64_t>> Result::as_int64_vector() const noexcept
+    SyncResult<std::vector<std::int64_t>> Result::as_int64_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -565,7 +565,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<std::uint64_t>> Result::as_uint64_vector() const noexcept
+    SyncResult<std::vector<std::uint64_t>> Result::as_uint64_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -632,7 +632,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<float>> Result::as_float_vector() const noexcept
+    SyncResult<std::vector<float>> Result::as_float_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -699,7 +699,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<double>> Result::as_double_vector() const noexcept
+    SyncResult<std::vector<double>> Result::as_double_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -766,7 +766,7 @@ namespace reddish::resp
         return vec;
     }
 
-    boost::outcome_v2::result<std::vector<bool>> Result::as_boolean_vector() const noexcept
+    SyncResult<std::vector<bool>> Result::as_boolean_vector() const noexcept
     {
         if (type() != ResultType::Array)
         {
@@ -983,7 +983,7 @@ namespace reddish::resp
 
     IntResult::IntResult(const IntResult::value_type& val):val(val){}
 
-    boost::asio::awaitable<boost::outcome_v2::result<IntResult>> IntResult::create_from_connection(network::Connection &conn){
+    AsyncResult<IntResult> IntResult::create_from_connection(network::Connection &conn){
         std::string buf_container;
         boost::asio::dynamic_string_buffer buf(buf_container);
         auto result = co_await conn.read_until(buf, "\r\n");
@@ -1002,7 +1002,7 @@ namespace reddish::resp
         co_return IntResult(int64_res.value());
     }
 
-    const boost::outcome_v2::result<IntResult::value_type> &IntResult::result() const noexcept{
+    const SyncResult<IntResult::value_type> &IntResult::result() const noexcept{
         return val;
     }
 
@@ -1015,7 +1015,7 @@ namespace reddish::resp
 
     StringResult::StringResult(const StringResult::value_type& val):val(val){}
 
-    boost::asio::awaitable<boost::outcome_v2::result<StringResult>> StringResult::create_from_connection(network::Connection &conn){
+    AsyncResult<StringResult> StringResult::create_from_connection(network::Connection &conn){
         std::string buf_container;
         boost::asio::dynamic_string_buffer buf(buf_container);
         auto result = co_await conn.read_until(buf, "\r\n");
@@ -1034,7 +1034,7 @@ namespace reddish::resp
         co_return StringResult(string_res.value());
     }
 
-    const boost::outcome_v2::result<StringResult::value_type> &StringResult::result() const noexcept{
+    const SyncResult<StringResult::value_type> &StringResult::result() const noexcept{
         return val;
     }
 

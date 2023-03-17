@@ -5,7 +5,8 @@
 #include <map>
 #include <set>
 #include "command.h"
-#include "../network/connection.h"
+#include "reddish/network/connection.h"
+#include "reddish/common/return_type.h"
 
 #include <boost/outcome.hpp>
 
@@ -59,6 +60,7 @@ namespace reddish::resp
         std::string_view to_string_view();
 
         std::string to_string();
+
     };
 
 }

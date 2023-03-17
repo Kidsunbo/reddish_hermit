@@ -1,8 +1,7 @@
 #ifndef REDDISH_HERMIT_NETWORK_CONNECTION_H
 #define REDDISH_HERMIT_NETWORK_CONNECTION_H
 
-#include <boost/asio.hpp>
-#include <boost/outcome.hpp>
+#include "reddish/common/return_type.h"
 #include <tuple>
 
 namespace reddish::network
@@ -17,9 +16,6 @@ namespace reddish::network
         int timeout;
         boost::asio::steady_timer timer;
 
-        template<typename T>
-        using Result = boost::asio::awaitable<boost::outcome_v2::result<T>>;
-        using Buffer = boost::asio::dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>>;
         public:
         /*
         Constructor
@@ -44,33 +40,33 @@ namespace reddish::network
         Connect to the remote with hostname and port. This will first connect to DNS to fetch the ip address
         of the remote server.
         */
-        [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_host_name(std::string_view host, unsigned short port);
+        [[nodiscard]] AsyncResult<boost::asio::ip::tcp::endpoint> connect_with_host_name(std::string_view host, unsigned short port);
         
         /*
         Connect to the remote with ip and port. This will first connect to DNS to fetch the ip address
         of the remote server.
         */
-        [[nodiscard]] Result<boost::asio::ip::tcp::endpoint> connect_with_ip(const std::string& ip, unsigned short port);
+        [[nodiscard]] AsyncResult<boost::asio::ip::tcp::endpoint> connect_with_ip(const std::string& ip, unsigned short port);
         
         /*
         Write to the connection with bunch of bytes. The bytes is represented by string_view.
         The return value represents how many bytes are written successfully.
         */
-        [[nodiscard]] Result<std::size_t> write(std::string_view value);
+        [[nodiscard]] AsyncResult<std::size_t> write(std::string_view value);
         
         /*
         Read from the connection until the pattern sep is met.
         Notice the Buffer is of boost::asio::dynamic_string_buffer.
         The return value represents how many bytes are read successfully.
         */
-        [[nodiscard]] Result<std::size_t> read_until(Buffer& buf, std::string_view sep);
+        [[nodiscard]] AsyncResult<std::size_t> read_until(Buffer& buf, std::string_view sep);
         
         /*
         Read from the connection until the pattern sep is met.
         Notice the Buffer is of boost::asio::dynamic_string_buffer.
         The return value represents how many bytes are read successfully.
         */
-        [[nodiscard]] Result<std::size_t> read_exact(Buffer& buf, std::int64_t size);
+        [[nodiscard]] AsyncResult<std::size_t> read_exact(Buffer& buf, std::int64_t size);
         
         /*
         Close the connection. It will try to shutdown both side and then close the socket.
