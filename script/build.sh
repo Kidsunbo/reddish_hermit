@@ -1,6 +1,6 @@
 WORKSPACE=$1
 BUILD_TYPE=$2
-preset=$(echo "$BUILD_TYPE" | awk '{print tolower($0)}')
+preset=$(echo "$BUILD_TYPE" | awk 'conan_{print tolower($0)}')
 
 
 echo "【KIE】Create Build Environment"
@@ -15,6 +15,9 @@ pip install conan
 
 echo "【KIE】Configure Conan"
 conan profile detect
+
+echo "【KIE】Check CMake Version"
+cmake --version
 
 echo "【KIE】Install Dependency"
 cd ${WORKSPACE}/build
