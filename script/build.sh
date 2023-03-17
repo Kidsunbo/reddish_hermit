@@ -20,13 +20,10 @@ echo "【KIE】Check CMake Version"
 cmake --version
 
 echo "【KIE】Install Dependency"
-cd ${WORKSPACE}/build
-conan install .. --build=missing -s build_type=${BUILD_TYPE}
+conan install . --build=missing -s build_type=${BUILD_TYPE}
 
 echo "【KIE】Configure CMake"
-cd ${WORKSPACE}/build
-cmake ${WORKSPACE} --preset ${preset}
+cmake . --preset ${preset}
 
 echo "【KIE】Build"
-cd ${WORKSPACE}
 cmake --build --preset ${preset}
