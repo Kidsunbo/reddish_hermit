@@ -65,7 +65,7 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
 
     - name: Configure and Build
-      run: chmod 777 ./script/build.sh && ./script/build.sh $GITHUB_WORKSPACE $BUILD_TYPE
+      run: chmod 777 ./script/build.sh && ./script/build.sh $BUILD_TYPE
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

@@ -38,12 +38,8 @@ class ReddishHermitConan(ConanFile):
     def layout(self):
         cmake_layout(self)
 
-    def configure(self):
-        self.options["kie_toolbox"].with_context = True
-        self.options["kie_toolbox"].enable_test = False
-
     def requirements(self):
-        self.requires("kie_toolbox/0.1.0")
+        self.requires("boost/1.81.0")
         if self.options.with_ssl:
             self.requires("openssl/3.0.5")
 

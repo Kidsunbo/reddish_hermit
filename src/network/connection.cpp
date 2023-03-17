@@ -8,8 +8,8 @@ using namespace boost::asio::experimental::awaitable_operators;
 namespace reddish::network
 {
     Connection::Connection(boost::asio::any_io_executor ctx, int timeout) : ctx(ctx), sock(ctx), timeout(timeout),timer(ctx) {}
-    Connection::Connection(boost::asio::io_context& ctx, int timeout):ctx(ctx.get_executor()), sock(ctx), timeout(timeout),timer(ctx){}
-    Connection::Connection(boost::asio::io_context&& ctx, int timeout):ctx(ctx.get_executor()), sock(ctx), timeout(timeout),timer(ctx){}
+    Connection::Connection(boost::asio::io_context& ctx, int timeout):Connection(ctx.get_executor(), timeout){}
+    Connection::Connection(boost::asio::io_context&& ctx, int timeout):Connection(ctx.get_executor(), timeout){}
 
 
     Connection::Result<boost::asio::ip::tcp::endpoint> Connection::connect_with_host_name(std::string_view host, unsigned short port)

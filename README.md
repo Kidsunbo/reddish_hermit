@@ -34,5 +34,3 @@ to the `options` section of your `conanfile.txt` file.
 
 ### Other way
 If you would like to use the traditional way to install this library, you will have to install `Boost` first and `OpenSSL` if you need TLS support. Don't forget set `WITH_SSL` to `ON` if TLS support is needed.
-
-You also need copy `kie_toolbox_cpp` to somewhere and include the `include` directory.
