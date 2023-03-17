@@ -10,9 +10,6 @@ pip install conan
 echo "【KIE】Configure Conan"
 conan profile detect
 
-echo "【KIE】Check CMake Version"
-cmake --version
-
 echo "【KIE】Install Dependency"
 conan install . --build=missing -s build_type=${BUILD_TYPE}
 
