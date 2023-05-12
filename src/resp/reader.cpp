@@ -3,15 +3,13 @@
 
 namespace reddish::resp
 {
-    Reader::Reader() : buf_string{}, index_offset(0), buf(buf_string){}
+    OnceReader::OnceReader() : result{}, buf_string{}, buf(buf_string){}
 
-    AsyncResult<std::string> Reader::read_whole_reply(network::Connection &conn)
+    AsyncResult<std::string> OnceReader::read_whole_reply(network::Connection &conn)
     {
-        if (buf_string.capacity() < 20)
-            buf_string.reserve(30);
+        buf_string.reserve(30);
+        result.reserve(30);
         
-        index_offset = 0;
-
         auto reply_length = co_await conn.read_exact(buf, 1);
         if (reply_length.has_error())
         {
@@ -28,97 +26,86 @@ namespace reddish::resp
         case '-':
         case ':':
         {
+            buf.consume(1);
             auto res = co_await read_whole_simple(conn);
             if (res.has_error())
             {
                 co_return res.error();
             }
-            if (static_cast<std::int64_t>(buf_string.length()) < res.value())
-            {
-                co_return boost::system::errc::invalid_argument;
-            }
-            auto result = buf_string.substr(0, res.value());
-            buf.consume(result.size());
-            co_return result;
+            break;
         }
         case '$':
         {
+            buf.consume(1);
             auto res = co_await read_whole_bulk_string(conn);
             if (res.has_error())
             {
                 co_return res.error();
             }
-            if (static_cast<std::int64_t>(buf_string.length()) < res.value())
-            {
-                co_return boost::system::errc::invalid_argument;
-            }
-            auto result = buf_string.substr(0, res.value());
-            buf.consume(result.size());
-            co_return result;
+            break;
         }
         case '*':
         {
+            buf.consume(1);
             auto res = co_await read_whole_array(conn);
             if (res.has_error())
             {
                 co_return res.error();
             }
-            if (static_cast<std::int64_t>(buf_string.length()) < res.value())
-            {
-                co_return boost::system::errc::invalid_argument;
-            }
-            auto result = buf_string.substr(0, res.value());
-            buf.consume(result.size());
-            co_return result;
+            break;
         }
         default:
             co_return boost::system::errc::invalid_argument;
         }
+        co_return result;
     }
 
-    AsyncResult<std::int64_t> Reader::read_whole_bulk_string(network::Connection &conn)
+    AsyncResult<void> OnceReader::read_whole_bulk_string(network::Connection &conn)
     {
-        auto result = co_await conn.read_until(buf, "\r\n");
-        if(result.has_error()){
-            co_return result.error();
+        auto length_of_length = co_await conn.read_until(buf, "\r\n");
+        if(length_of_length.has_error()){
+            co_return length_of_length.error();
         }
-        auto it = buf_string.cbegin() + index_offset;
-        it++; // skip the leading '$'
+        auto it = buf_string.cbegin();
         auto length = utils::retrieve_length(it, buf_string.cend());
         if(length.has_error()){
             co_return length.error();
         }
+        buf.consume(length_of_length.value());
         if(length.value() > 0){
             auto content = co_await conn.read_exact(buf, length.value()+2);
             if(content.has_error()){
                 co_return content.error();
             }
-            index_offset += result.value() + content.value();
-            co_return result.value() + content.value();
+            result = std::move(buf_string);
+            result.pop_back();
+            result.pop_back();
+            co_return boost::outcome_v2::success();
         }else{
             auto content = co_await conn.read_exact(buf, 2);
             if(content.has_error()){
                 co_return content.error();
             }
-            index_offset += result.value() + content.value();
-            co_return result.value() + content.value();
+            co_return boost::outcome_v2::success();
         }
     }
 
-    AsyncResult<std::int64_t> Reader::read_whole_array(network::Connection &conn)
+    AsyncResult<void> OnceReader::read_whole_array(network::Connection &conn)
     {
         static_cast<void>(conn);
-        co_return 0;
+        co_return boost::outcome_v2::success();
     }
 
-    AsyncResult<std::int64_t> Reader::read_whole_simple(network::Connection &conn)
+    AsyncResult<void> OnceReader::read_whole_simple(network::Connection &conn)
     {
         auto length = co_await conn.read_until(buf, "\r\n");
         if(length.has_error()){
             co_return length.error();
         }
-        index_offset += length.value();
-        co_return length.value();
+        result = std::move(buf_string);
+        result.pop_back();
+        result.pop_back();
+        co_return boost::outcome_v2::success();
     }
 
 } // namespace reddish::resp

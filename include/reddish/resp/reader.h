@@ -7,26 +7,25 @@
 namespace reddish::resp
 {
     /*
-    Reader takes responsibility to read a whole reply from connection.
-    And then feed the reply to Result in resp folder.
+    OnceReader takes responsibility to read a whole reply from connection.
+    And then feed the reply to Result in resp folder. It should be only used once.
     */
-    class Reader
+    class OnceReader
     {
+        std::string result;
 
         std::string buf_string;
 
-        std::int64_t index_offset;
+        Buffer buf;
 
-        boost::asio::dynamic_string_buffer<std::string::value_type, std::string::traits_type, std::string::allocator_type> buf;
+        AsyncResult<void> read_whole_bulk_string(network::Connection &conn);
 
-        AsyncResult<std::int64_t> read_whole_bulk_string(network::Connection &conn);
+        AsyncResult<void> read_whole_array(network::Connection &conn);
 
-        AsyncResult<std::int64_t> read_whole_array(network::Connection &conn);
-
-        AsyncResult<std::int64_t> read_whole_simple(network::Connection &conn);
+        AsyncResult<void> read_whole_simple(network::Connection &conn);
 
     public:
-        explicit Reader();
+        explicit OnceReader();
 
         AsyncResult<std::string> read_whole_reply(network::Connection &conn);
     };
