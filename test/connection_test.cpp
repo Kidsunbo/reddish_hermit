@@ -105,7 +105,7 @@ boost::asio::awaitable<void> co_main_redis(){
 int main()
 {
     boost::asio::io_context ctx;
-    // boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
+    boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
     boost::asio::co_spawn(ctx, co_main_redis(), boost::asio::detached);
     ctx.run();
     return 0;
