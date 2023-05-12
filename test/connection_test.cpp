@@ -83,9 +83,14 @@ boost::asio::awaitable<void> co_main_http()
 boost::asio::awaitable<void> co_main_redis(){
     auto ctx = co_await boost::asio::this_coro::executor;
     Connection conn(ctx, 5);
-
-    co_await conn.connect_with_host_name("host.docker.internal", 6379);
-    co_await conn.write("*2\r\n$4\r\nPING\r\n$3\r\nHey\r\n");
+    if(auto result = co_await conn.connect_with_host_name("host.docker.internal", 6379); result.has_error()){
+        std::cerr<<"connect: "<<result.error()<<std::endl;
+        co_return;
+    }
+    if(auto result = co_await conn.write("*1\r\n$7\r\nCOMMAND\r\n"); result.has_error()){
+        std::cerr<<"write: "<<result.error()<<std::endl;
+        co_return;
+    }
     std::string s;
     boost::asio::dynamic_string_buffer buf(s);
     auto n = co_await conn.read_until(buf, "\r\n");
@@ -93,16 +98,14 @@ boost::asio::awaitable<void> co_main_redis(){
         std::cout<<n.error().message()<<std::endl;
         co_return;
     }
-    std::cout<<"Return Value "<<n.value()<<"  "<<s<<std::endl;
-    n = co_await conn.read_until(buf, "\r\n");
-    std::cout<<"Return Value "<<n.value()<<"  "<<s<<std::endl;
-
+    std::cout<<"Return Value "<<n.value()<<"\n"<<s<<std::endl;
+    buf.consume(n.value());
 }
 
 int main()
 {
     boost::asio::io_context ctx;
-    boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
+    // boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
     boost::asio::co_spawn(ctx, co_main_redis(), boost::asio::detached);
     ctx.run();
     return 0;

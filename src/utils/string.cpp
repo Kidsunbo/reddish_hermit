@@ -1,4 +1,4 @@
-#include "reddish/utils/str.h"
+#include "reddish/utils/string.h"
 
 namespace reddish::utils
 {
@@ -28,7 +28,7 @@ namespace reddish::utils
         return true;
     }
 
-    boost::outcome_v2::result<std::int64_t> retrieve_length(std::string::const_iterator &it, const std::string::const_iterator &end)
+    SyncResult<std::int64_t> retrieve_length(std::string::const_iterator &it, const std::string::const_iterator &end)
     {
         std::int64_t length = 0;
         bool is_first = true;
@@ -62,7 +62,7 @@ namespace reddish::utils
         return is_positive ? length : -length;
     }
 
-    boost::outcome_v2::result<std::string> retrieve_string_without_advance(std::string::const_iterator &it, const std::string::const_iterator &end, std::int64_t length)
+    SyncResult<std::string> retrieve_string_without_advance(std::string::const_iterator &it, const std::string::const_iterator &end, std::int64_t length)
     {
         if (length >= 0 && std::distance(it, end) >= length)
         {
@@ -109,9 +109,9 @@ namespace reddish::utils
             steps++;
         }
         return steps;
-    }
+}
 
-    boost::outcome_v2::result<std::int64_t> next_item_length(std::string::const_iterator it, std::string::const_iterator end)
+    SyncResult<std::int64_t> next_item_length(std::string::const_iterator it, std::string::const_iterator end)
     {
         if(it == end){
             return boost::system::errc::invalid_argument;

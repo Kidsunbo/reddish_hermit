@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <reddish/utils/str.h>
+#include <reddish/utils/string.h>
 
 using namespace reddish::utils;
 
