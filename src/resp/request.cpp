@@ -3,7 +3,7 @@
 
 namespace reddish::resp
 {
-    std::string Request::item_wrap(std::string_view value)
+    std::string Request::wrap_item(std::string_view value)
     {
         std::string wrapped_str;
         // Assume that the wrapped str is '$<five number>\r\n{value}\r\n'.
@@ -17,55 +17,55 @@ namespace reddish::resp
         return wrapped_str;
     }
 
-    std::string Request::item_wrap(float value)
+    std::string Request::wrap_item(float value)
     {
         std::stringstream ss;
         ss << value;
-        return item_wrap(ss.str());
+        return wrap_item(ss.str());
     }
 
-    std::string Request::item_wrap(double value)
+    std::string Request::wrap_item(double value)
     {
         std::stringstream ss;
         ss << value;
-        return item_wrap(ss.str());
+        return wrap_item(ss.str());
     }
 
-    std::string Request::item_wrap(std::int64_t value)
+    std::string Request::wrap_item(std::int64_t value)
     {
-        return item_wrap(std::to_string(value));
+        return wrap_item(std::to_string(value));
     }
 
-    std::string Request::item_wrap(std::uint64_t value)
+    std::string Request::wrap_item(std::uint64_t value)
     {
-        return item_wrap(std::to_string(value));
+        return wrap_item(std::to_string(value));
     }
 
-    std::string Request::item_wrap(std::int32_t value)
+    std::string Request::wrap_item(std::int32_t value)
     {
-        return item_wrap(std::to_string(value));
+        return wrap_item(std::to_string(value));
     }
 
-    std::string Request::item_wrap(std::uint32_t value)
+    std::string Request::wrap_item(std::uint32_t value)
     {
-        return item_wrap(std::to_string(value));
+        return wrap_item(std::to_string(value));
     }
 
-    std::string Request::item_wrap(bool value)
+    std::string Request::wrap_item(bool value)
     {
-        return value ? item_wrap("true") : item_wrap("false");
+        return value ? wrap_item("true") : wrap_item("false");
     }
 
-    std::string Request::item_wrap(const char *value)
+    std::string Request::wrap_item(const char *value)
     {
-        return item_wrap(std::string_view{value});
+        return wrap_item(std::string_view{value});
     }
 
-    std::string Request::item_wrap(long double value)
+    std::string Request::wrap_item(long double value)
     {
         std::stringstream ss;
         ss << value;
-        return item_wrap(ss.str());
+        return wrap_item(ss.str());
     }
 
     std::string_view Request::to_string_view()

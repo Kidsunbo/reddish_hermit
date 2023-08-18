@@ -18,25 +18,25 @@ namespace reddish::resp
 
     private:
         // wrap string and string_view type
-        std::string item_wrap(std::string_view value);
+        std::string wrap_item(std::string_view value);
         // wrap const char* type
-        std::string item_wrap(const char *value);
+        std::string wrap_item(const char *value);
         // wrap float type
-        std::string item_wrap(float value);
+        std::string wrap_item(float value);
         // wrap double type
-        std::string item_wrap(double value);
+        std::string wrap_item(double value);
         // wrap long double type
-        std::string item_wrap(long double value);
+        std::string wrap_item(long double value);
         // wrap short, unsigned short and int type
-        std::string item_wrap(std::int32_t value);
+        std::string wrap_item(std::int32_t value);
         // wrap unsigned int type
-        std::string item_wrap(std::uint32_t value);
+        std::string wrap_item(std::uint32_t value);
         // wrap long(64bit), long long type
-        std::string item_wrap(std::int64_t value);
+        std::string wrap_item(std::int64_t value);
         // wrap unsigned long(64bit), unsigned long long(32bit) type
-        std::string item_wrap(std::uint64_t value);
+        std::string wrap_item(std::uint64_t value);
         // wrap boolean type
-        std::string item_wrap(bool value);
+        std::string wrap_item(bool value);
 
         template <std::size_t SizeHint = 30, typename... ARGS>
         std::string to_request_string(Command cmd, ARGS &&...args)
@@ -48,8 +48,8 @@ namespace reddish::resp
             buf.append(std::to_string(arr_size));
             buf.append("\r\n");
 
-            buf.append(item_wrap(resp::to_string(cmd)));
-            (buf.append(item_wrap(args)), ...);
+            buf.append(wrap_item(resp::to_string(cmd)));
+            (buf.append(wrap_item(args)), ...);
             return buf;
         }
 
