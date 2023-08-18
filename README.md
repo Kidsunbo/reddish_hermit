@@ -13,11 +13,12 @@
 
 ## Usage
 ### Conan
-`reddish_hermit` uses `conan` as its package manager and use one custom repository to hold the package. So installing this library only requires one
-extra command:
+`reddish_hermit` uses `conan` as its package manager, and provided as a conan package as well. So you could just use `conan` to install the package.
+
+Download the source code into your folder and enter to the root of the source code.
 
 ```
-conan remote add kie-kies https://conan.cloudsmith.io/kie/kies/
+conan create .
 ```
 
 and then add 
