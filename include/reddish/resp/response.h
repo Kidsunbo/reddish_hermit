@@ -109,7 +109,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class StringResult
@@ -127,7 +127,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class BoolResult
@@ -143,7 +143,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class VectorResult
@@ -159,7 +159,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class DoubleResult
@@ -175,7 +175,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class DoubleVectorResult
@@ -191,7 +191,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class IntVectorResult
@@ -207,7 +207,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class StringVectorResult
@@ -223,7 +223,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class BoolVectorResult
@@ -239,7 +239,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class MapResult
@@ -255,7 +255,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class MapStringStringResult
@@ -271,7 +271,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
     class MapStringIntResult
@@ -287,7 +287,7 @@ namespace reddish::resp
 
         const SyncResult<value_type> &result() const noexcept;
 
-        value_type result(value_type defalt_value) const noexcept;
+        value_type result(value_type default_value) const noexcept;
     };
 
 } // namespace reddish::resp

@@ -1006,11 +1006,11 @@ namespace reddish::resp
         return val;
     }
 
-    IntResult::value_type IntResult::result(IntResult::value_type defalt_value) const noexcept{
+    IntResult::value_type IntResult::result(IntResult::value_type default_value) const noexcept{
         if(val.has_value()){
             return val.value();
         }
-        return defalt_value;
+        return default_value;
     }
 
     StringResult::StringResult(const StringResult::value_type& val):val(val){}
@@ -1038,11 +1038,11 @@ namespace reddish::resp
         return val;
     }
 
-    StringResult::value_type StringResult::result(StringResult::value_type defalt_value) const noexcept{
+    StringResult::value_type StringResult::result(StringResult::value_type default_value) const noexcept{
         if(val.has_value()){
             return val.value();
         }
-        return defalt_value;
+        return default_value;
     }
 
 } // namespace reddish::resp
