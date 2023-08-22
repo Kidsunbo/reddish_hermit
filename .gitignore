@@ -1,3 +1,5 @@
 build/
 doc/
 CMakeUserPresets.json
+.vscode
+.idea
