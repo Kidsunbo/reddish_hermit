@@ -6,7 +6,8 @@
 namespace reddish::resp
 {
     class Response{
-        [[maybe_unused]] Result result;
+        Result result;
+        
     };
 } // namespace reddish::resp
 
