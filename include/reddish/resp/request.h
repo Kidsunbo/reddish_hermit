@@ -38,6 +38,12 @@ namespace reddish::resp
         // wrap boolean type
         std::string wrap_item(bool value);
 
+        #ifdef __APPLE__
+        std::string wrap_item(long value);
+
+        std::string wrap_item(unsigned long value);
+        #endif
+
         template <std::size_t SizeHint = 30, typename... ARGS>
         std::string to_request_string(Command cmd, ARGS &&...args)
         {

@@ -1,6 +1,5 @@
 #include "reddish/resp/request.h"
 
-
 namespace reddish::resp
 {
     std::string Request::wrap_item(std::string_view value)
@@ -67,6 +66,18 @@ namespace reddish::resp
         ss << value;
         return wrap_item(ss.str());
     }
+
+#ifdef __APPLE__
+    std::string Request::wrap_item(long value)
+    {
+        return wrap_item(std::to_string(value));
+    }
+
+    std::string Request::wrap_item(unsigned long value)
+    {
+        return wrap_item(std::to_string(value));
+    }
+#endif
 
     std::string_view Request::to_string_view()
     {
