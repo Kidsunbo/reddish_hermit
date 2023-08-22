@@ -5,9 +5,23 @@
 
 namespace reddish::resp
 {
-    class Result{
+    enum class ResultType
+    {
+        Unknown,
+        SimpleString,
+        Error,
+        Integer,
+        BulkString,
+        Array,
     };
-} // namespace reddish::resp
 
+    class Result
+    {
+        ResultType type;
+    public:
+        
+    };
+
+} // namespace reddish::resp
 
 #endif
