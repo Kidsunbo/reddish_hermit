@@ -3,3 +3,4 @@ doc/
 CMakeUserPresets.json
 .vscode
 .idea
+.cache

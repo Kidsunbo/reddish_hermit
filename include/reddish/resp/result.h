@@ -17,7 +17,7 @@ namespace reddish::resp
 
     class Result
     {
-        ResultType type;
+        [[maybe_unused]] ResultType type;
     public:
         
     };
