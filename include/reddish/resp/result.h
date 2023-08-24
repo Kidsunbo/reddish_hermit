@@ -3,10 +3,8 @@
 
 #include "reddish/common/return_type.h"
 
-namespace reddish::resp
-{
-    enum class ResultType
-    {
+namespace reddish::resp {
+    enum class ResultType {
         Unknown,
         SimpleString,
         Error,
@@ -14,14 +12,6 @@ namespace reddish::resp
         BulkString,
         Array,
     };
-
-    class Result
-    {
-        [[maybe_unused]] ResultType type;
-    public:
-        
-    };
-
 } // namespace reddish::resp
 
 #endif
