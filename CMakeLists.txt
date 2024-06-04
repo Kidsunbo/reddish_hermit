@@ -1,26 +1,23 @@
 cmake_minimum_required(VERSION 3.15)
 project(reddish_hermit CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(Boost REQUIRED)
-
-add_library(reddish_hermit)
-add_subdirectory(src)
-target_include_directories(reddish_hermit PUBLIC include)
-target_link_libraries(reddish_hermit PUBLIC boost::boost)
-
-
 option(ENABLE_TEST "if enable test for reddish_hermit" ON)
-if(ENABLE_TEST)
-    include(CTest)
-    add_subdirectory(test)
-    target_compile_options(reddish_hermit PUBLIC -fsanitize=address -g --coverage -Wall -Wextra -Werror)
-    target_link_options(reddish_hermit PUBLIC -fsanitize=address --coverage)
+option(ENABLE_CLIENT "if compile and build the client" ON)
+option(ENABLE_SERVER "if compile and bulild the server" ON)
+
+add_subdirectory(common)
+
+if(ENABLE_CLIENT)
+    add_subdirectory(client)
+endif()
+
+if(ENABLE_SERVER)
+    add_subdirectory(server)
 endif()
 
 
-install(TARGETS reddish_hermit)
-install(DIRECTORY include/ DESTINATION include)
 install(FILES LICENSE DESTINATION license)

@@ -1,0 +1,5 @@
+aux_source_directory(. SRC)
+aux_source_directory(storage STORAGE)
+aux_source_directory(server SERVER)
+aux_source_directory(commands COMMANDS)
+target_sources(reddish_hermit_server PRIVATE ${SRC} ${PROTOCOL} ${STORAGE} ${SERVER} ${COMMANDS})

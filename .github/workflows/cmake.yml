@@ -19,10 +19,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Configure and build
+    - name: Configure and build client
       working-directory: ${{github.workspace}}
       shell: bash
-      run: chmod 777 ./script/build.sh && ./script/build.sh $BUILD_TYPE
+      run: chmod 777 ./script/build_client.sh && ./script/build_client.sh $BUILD_TYPE
+
+    - name: Configure and build server
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: chmod 777 ./script/build_server.sh && ./script/build_server.sh $BUILD_TYPE
 
     - name: Test
       working-directory: ${{github.workspace}}
