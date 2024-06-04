@@ -8,7 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 
-`reddish_hermit` is a redis client powered by Boost.ASIO with C++20 coroutine. It's made to add one more redis client to ASIO ecosystem.
+`reddish_hermit` is a redis like kv database with client and server which is powered by Boost.ASIO with C++20 coroutine.
+The client can be used individually as a redis client.
 </div>
 
 ## Usage

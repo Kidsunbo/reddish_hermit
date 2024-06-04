@@ -10,8 +10,8 @@ class ReddishHermitConan(ConanFile):
     license = "MIT"
     author = "Kie <qiongxiaozi158@sina.com>"
     url = "https://github.com/Kidsunbo/reddish_hermit"
-    description = "A redis client powered by Boost.ASIO"
-    topics = ("async", "redis", "asio")
+    description = "A kv database powered by Boost.ASIO"
+    topics = ("async", "redis", "asio", "database")
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
