@@ -29,7 +29,7 @@ class ReddishHermitConan(ConanFile):
     }
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "include/*", "test/*", "LICENSE"
+    exports_sources = "CMakeLists.txt", "client/*", "LICENSE"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -50,6 +50,7 @@ class ReddishHermitConan(ConanFile):
     def _configurate(self, tc):
         tc.variables["WITH_SSL"] = self.options.with_ssl
         tc.variables["ENABLE_TEST"] = self.options.enable_test
+        tc.variables["NEABLE_CLIENT"] = True
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -69,7 +70,7 @@ class ReddishHermitConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ["reddish_hermit"]
+        self.cpp_info.libs = ["reddish_hermit_client"]
         if self.options.enable_test:
             self.cpp_info.cxxflags = ["--coverage", "-fsanitize=address"]
             self.cpp_info.exelinkflags = ["--coverage", "-fsanitize=address"]
