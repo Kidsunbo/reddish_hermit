@@ -1,6 +1,8 @@
-#include <kiedis/kiedis.h>
-#include <kiedis/connection.h>
-#include <boost/asio.hpp>
+#include <boost/asio/executor.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <server/kiedis/kiedis.h>
+#include <server/kiedis/connection_handler.h>
+#include <common/network/connection.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -19,7 +21,9 @@ boost::asio::awaitable<void> KiedisServer::run()
         boost::asio::co_spawn(
             ctx,
             [](boost::asio::ip::tcp::socket socket) -> boost::asio::awaitable<void> {
-                ConnectionHandler handler{std::move(socket)};
+                auto ctx = co_await boost::asio::this_coro::executor;
+                reddish::common::network::Connection conn(ctx, std::move(socket));
+                ConnectionHandler handler{std::move(conn)};
                 co_await handler.handle_connection();
                 co_return;
             }(std::move(socket)),

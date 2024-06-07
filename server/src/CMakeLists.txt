@@ -1,5 +1,4 @@
 aux_source_directory(. SRC)
 aux_source_directory(storage STORAGE)
 aux_source_directory(kiedis KIEDIS)
-aux_source_directory(commands COMMANDS)
-target_sources(reddish_hermit_server PRIVATE ${SRC} ${PROTOCOL} ${STORAGE} ${KIEDIS} ${COMMANDS})
+target_sources(reddish_hermit_server PRIVATE ${SRC} ${STORAGE} ${KIEDIS})

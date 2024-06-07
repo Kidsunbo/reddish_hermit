@@ -7,7 +7,6 @@ target_link_libraries(reddish_hermit_common PUBLIC boost::boost)
 
 
 if(ENABLE_TEST)
-    include(CTest)
     add_subdirectory(test)
     target_compile_options(reddish_hermit_common PUBLIC -fsanitize=address -g --coverage -Wall -Wextra -Werror)
     target_link_options(reddish_hermit_common PUBLIC -fsanitize=address --coverage)

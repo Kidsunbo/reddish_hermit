@@ -1,11 +1,11 @@
-#include <reddish/network/connection.h>
+#include <common/network/connection.h>
 #include <iostream>
 
 #include <boost/regex.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
 using namespace boost::asio::experimental::awaitable_operators;
 
-using namespace reddish::network;
+using namespace reddish::common::network;
 
 boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
 {
@@ -13,7 +13,7 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
     auto v = co_await conn.connect_with_host_name(host, 80);
     if (!v)
     {
-        std::cout <<"failed to parse host: "<<  v.error() << std::endl;
+        std::cout <<"failed to parse host: "<<  v.error().message() << std::endl;
         co_return "";
     }
     std::cout <<"IP address: "<< v.value() << std::endl;
@@ -26,20 +26,18 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
     }
     std::cout << "Write request with "<< ve.value()<<" bytes" << std::endl;
 
-    std::string s;
-    boost::asio::dynamic_string_buffer buf(s);
-    ve = co_await conn.read_until(buf, "\r\n\r\n");
-    if (!ve)
+    auto content = co_await conn.read_until("\r\n\r\n");
+    if (!content)
     {
-        std::cout << "Failed to read response " <<ve.error() << std::endl;
+        std::cout << "Failed to read response " <<content.error() << std::endl;
         co_return "";
     }
-    std::cout << "Read response with "<< ve.value() <<" bytes" << std::endl;
+    std::cout << "Read response with "<< content.value().length() <<" bytes" << std::endl;
 
     std::size_t total_size = 0;
     boost::regex re("Content-Length: ([0-9]+)");
     boost::smatch what;
-    if (boost::regex_search(s, what, re))
+    if (boost::regex_search(content.value(), what, re))
     {
         total_size = std::stoi(what[1]);
     }
@@ -48,17 +46,16 @@ boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
         std::cout << "Failed to parse Content-Length" << std::endl;
         co_return "";
     }
-    std::string result = s.substr(0, ve.value());
-    buf.consume(ve.value());
+    std::string result = content.value();
 
-    ve = co_await conn.read_exact(buf, total_size - s.length());
-    if (!ve)
+    content = co_await conn.read_exact(total_size);
+    if (!content)
     {
-        std::cout << "Failed to read body "<< ve.error() << std::endl;
+        std::cout << "Failed to read body "<< content.error() << std::endl;
         co_return "";
     }
-    std::cout <<"Read body with "<< ve.value() <<" bytes" << std::endl;
-    result.append(s);
+    std::cout <<"Read body with "<< content.value().length() <<" bytes" << std::endl;
+    result.append(content.value());
     co_return result;
 }
 
@@ -76,7 +73,8 @@ boost::asio::awaitable<void> co_main_http()
     };
     for(auto& item : vec){
         auto s = co_await get(conn, item);
-        std::cout<<s<<std::endl;
+        std::ignore = conn.close();
+        std::cout<<item<<std::endl<<s<<std::endl;
     }
 }
 
@@ -91,22 +89,19 @@ boost::asio::awaitable<void> co_main(){
         std::cerr<<"write: "<<result.error()<<std::endl;
         co_return;
     }
-    std::string s;
-    boost::asio::dynamic_string_buffer buf(s);
-    auto n = co_await conn.read_until(buf, "\r\n");
-    if(!n){
-        std::cout<<n.error().message()<<std::endl;
+    auto content = co_await conn.read_until("\r\n");
+    if(!content){
+        std::cout<<content.error().message()<<std::endl;
         co_return;
     }
-    std::cout<<"Return Value "<<n.value()<<"\n"<<s<<std::endl;
-    buf.consume(n.value());
+    std::cout<<"Return Value "<<content.value().length()<<"\n"<<content.value()<<std::endl;
 }
 
 int main()
 {
     boost::asio::io_context ctx;
     boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
-    boost::asio::co_spawn(ctx, co_main(), boost::asio::detached);
+    // boost::asio::co_spawn(ctx, co_main(), boost::asio::detached);
     ctx.run();
     return 0;
 }

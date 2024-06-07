@@ -9,6 +9,10 @@ option(ENABLE_TEST "if enable test for reddish_hermit" ON)
 option(ENABLE_CLIENT "if compile and build the client" ON)
 option(ENABLE_SERVER "if compile and bulild the server" ON)
 
+if(ENABLE_TEST)
+    include(CTest)
+endif()
+
 add_subdirectory(common)
 
 if(ENABLE_CLIENT)
