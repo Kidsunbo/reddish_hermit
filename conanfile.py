@@ -50,7 +50,7 @@ class ReddishHermitConan(ConanFile):
     def _configurate(self, tc):
         tc.variables["WITH_SSL"] = self.options.with_ssl
         tc.variables["ENABLE_TEST"] = self.options.enable_test
-        tc.variables["NEABLE_CLIENT"] = True
+        tc.variables["ENABLE_CLIENT"] = True
 
     def generate(self):
         tc = CMakeToolchain(self)
