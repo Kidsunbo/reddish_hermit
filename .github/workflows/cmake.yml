@@ -44,4 +44,4 @@ jobs:
     - name: Upload to Codecov.io
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: curl -Os https://uploader.codecov.io/latest/linux/codecov && chmod +x codecov && ./codecov
+      run: curl -Os https://uploader.codecov.io/latest/linux/codecov && chmod +x codecov && ./codecov --fail-on-error -t ${{ secrets.CODECOV_TOKEN }}
