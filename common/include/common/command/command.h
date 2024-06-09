@@ -9,12 +9,11 @@ namespace reddish::common::commands {
 
     template <typename T>
     concept HasTextMethod = requires(T t) {
-         { T::text() } -> std::convertible_to<std::string_view>;
+        { T::text() } -> std::convertible_to<std::string_view>;
     };
 
-    template<typename T>
+    template <typename T>
     concept IsString = std::is_same_v<std::remove_reference_t<T>, std::string_view> || std::is_same_v<std::remove_reference_t<T>, std::string>;
-
 
     enum class CommandEnum {
         Get,
@@ -48,11 +47,17 @@ namespace reddish::common::commands {
         static std::string to_string(std::string_view key) { return to_request_string<Command<CommandEnum::Get>>(key); }
     };
 
-
     template <>
     class Command<CommandEnum::GetBit> {
     public:
         constexpr static std::string_view text() { return "GETBIT"; }
         static std::string to_string(std::string_view key) { return to_request_string<Command<CommandEnum::GetBit>>(key); }
+    };
+
+    template <>
+    class Command<CommandEnum::Set> {
+    public:
+        constexpr static std::string_view text() { return "SET"; }
+        static std::string to_string(std::string_view key, std::string_view value) { return to_request_string<Command<CommandEnum::Set>>(key, value); }
     };
 }
