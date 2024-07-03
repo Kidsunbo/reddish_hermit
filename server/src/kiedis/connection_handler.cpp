@@ -28,7 +28,7 @@ boost::asio::awaitable<void> ConnectionHandler::handle_connection()
             }
         }
     } catch (std::exception& e) {
-        // std::cout << "[EXCEPTION] " << e.what() << std::endl;
+        std::cout << "[EXCEPTION] " << e.what() << std::endl;
     }
     co_return;
 }

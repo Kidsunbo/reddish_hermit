@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -58,6 +59,8 @@ namespace reddish::common::commands {
     class Command<CommandEnum::Set> {
     public:
         constexpr static std::string_view text() { return "SET"; }
-        static std::string to_string(std::string_view key, std::string_view value) { return to_request_string<Command<CommandEnum::Set>>(key, value); }
+        template<typename... ARGS> requires(sizeof...(ARGS) % 2 == 0)
+        static std::string to_string(std::string_view key, std::string_view value, ARGS... args){ return to_request_string<Command<CommandEnum::Set>>(key, value, args...);}
     };
+
 }
