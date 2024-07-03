@@ -63,4 +63,11 @@ namespace reddish::common::commands {
         static std::string to_string(std::string_view key, std::string_view value, ARGS... args){ return to_request_string<Command<CommandEnum::Set>>(key, value, args...);}
     };
 
+    template <>
+    class Command<CommandEnum::SetBit> {
+    public:
+        constexpr static std::string_view text() { return "SETBIT"; }
+        static std::string to_string(std::string_view key, std::uint32_t offset, std::int8_t value){ return to_request_string<Command<CommandEnum::SetBit>>(key, std::to_string(offset), std::to_string(value));}
+    };
+
 }
