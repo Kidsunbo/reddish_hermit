@@ -60,7 +60,7 @@ namespace reddish::common::commands {
     public:
         constexpr static std::string_view text() { return "SET"; }
         template<typename... ARGS> requires(sizeof...(ARGS) % 2 == 0)
-        static std::string to_string(std::string_view key, std::string_view value, ARGS... args){ return to_request_string<Command<CommandEnum::Set>>(key, value, args...);}
+        static std::string to_string(std::string_view key, std::string_view value, ARGS... args){ return to_request_string<Command<CommandEnum::Set>>(key, value, std::to_string(args)...);}
     };
 
     template <>
