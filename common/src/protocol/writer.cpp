@@ -1,52 +1,52 @@
-#include <boost/asio.hpp>
+#include <common/protocol/protocol.h>
+#include <common/protocol/resp_value.h>
 #include <common/protocol/writer.h>
-#include <stdexcept>
+
+#include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace reddish::common::protocol {
 
-    boost::asio::awaitable<std::int64_t> RESPWriter::write(std::string value)
+    utils::AsyncResult<std::size_t> RESPWriter::write(const RESPValue& value)
     {
-        
-        auto n = co_await conn.write(value);
-        if (!n || n.value() == 0) {
-            throw std::logic_error("failed to write anything to network");
+        co_return co_await conn.write(encode(value));
+    }
+
+    utils::AsyncResult<std::size_t> RESPWriter::write_simple_string(std::string value)
+    {
+        co_return co_await write(RESPValue::simple_string(std::move(value)));
+    }
+
+    utils::AsyncResult<std::size_t> RESPWriter::write_bulk_string(std::string value)
+    {
+        co_return co_await write(RESPValue::bulk_string(std::move(value)));
+    }
+
+    utils::AsyncResult<std::size_t> RESPWriter::write_null_bulk_string()
+    {
+        co_return co_await write(RESPValue::null());
+    }
+
+    utils::AsyncResult<std::size_t> RESPWriter::write_array(std::vector<std::string> value)
+    {
+        std::vector<RESPValue> items;
+        items.reserve(value.size());
+        for (auto& item : value) {
+            items.push_back(RESPValue::bulk_string(std::move(item)));
         }
-        co_return n.value();
+        co_return co_await write(RESPValue::array(std::move(items)));
     }
 
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_simple_string(std::string value)
+    utils::AsyncResult<std::size_t> RESPWriter::write_error(std::string code, std::string message)
     {
-        co_return co_await this->write("+" + value + "\r\n");
+        co_return co_await write(RESPValue::error(std::move(code), std::move(message)));
     }
 
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_bulk_string(std::string value)
+    utils::AsyncResult<std::size_t> RESPWriter::write_integer(std::int64_t value)
     {
-        co_return co_await this->write("$" + std::to_string(value.length()) + "\r\n" + value + "\r\n");
-    }
-
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_array(std::vector<std::string> value)
-    {
-        std::string data = "*" + std::to_string(value.size()) + "\r\n";
-        for (auto item : value) {
-            data += "$" + std::to_string(item.length()) + "\r\n" + item + "\r\n";
-        }
-        co_return co_await this->write(data);
-    }
-
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_error(std::string code, std::string value)
-    {
-        co_return co_await this->write("-" + code + " " + value + "\r\n");
-    }
-
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_integer(std::int64_t value)
-    {
-        co_return co_await this->write(":" + std::to_string(value) + "\r\n");
-    }
-
-    boost::asio::awaitable<std::int64_t> RESPWriter::write_null_bulk_string()
-    {
-        co_return co_await this->write("$-1\r\n");
+        co_return co_await write(RESPValue::integer(value));
     }
 
 }

@@ -1,10 +1,15 @@
 #pragma once
 
+#include <common/protocol/protocol.h>
+#include <common/protocol/resp_value.h>
+
 #include <concepts>
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace reddish::common::commands {
 
@@ -26,16 +31,11 @@ namespace reddish::common::commands {
     template <HasTextMethod Command, std::size_t SizeHint = 30, IsString... ARGS>
     std::string to_request_string(ARGS&&... args)
     {
-        std::string buf;
-        buf.reserve(SizeHint);
-        const std::size_t arr_size = 1 + sizeof...(args);
-        buf.append("*");
-        buf.append(std::to_string(arr_size));
-        buf.append("\r\n");
-
-        buf.append(Command::text());
-        (buf.append(args), ...);
-        return buf;
+        std::vector<protocol::RESPValue> items;
+        items.reserve(1 + sizeof...(args));
+        items.emplace_back(protocol::RESPValue::bulk_string(std::string(Command::text())));
+        (items.emplace_back(protocol::RESPValue::bulk_string(std::string(std::forward<ARGS>(args)))), ...);
+        return protocol::encode(protocol::RESPValue::array(std::move(items)));
     }
 
     template <CommandEnum Value>
