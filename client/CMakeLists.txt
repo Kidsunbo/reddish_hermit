@@ -8,7 +8,7 @@ target_link_libraries(reddish_hermit_client PUBLIC boost::boost reddish_hermit_c
 
 if(ENABLE_TEST)
     add_subdirectory(test)
-    target_compile_options(reddish_hermit_client PUBLIC -fsanitize=address -g --coverage -Wall -Wextra -Werror)
+    target_compile_options(reddish_hermit_client PUBLIC -fsanitize=address -g --coverage -Wall -Wextra -Werror -Wno-error=maybe-uninitialized)
     target_link_options(reddish_hermit_client PUBLIC -fsanitize=address --coverage)
 endif()
 

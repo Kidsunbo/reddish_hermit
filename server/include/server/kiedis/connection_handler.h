@@ -6,12 +6,14 @@
 #include <common/protocol/writer.h>
 
 class ConnectionHandler {
+    reddish::common::network::Connection& conn;
     reddish::common::protocol::RESPReader reader;
     reddish::common::protocol::RESPWriter writer;
 
 public:
-    ConnectionHandler(reddish::common::network::Connection&& conn)
-        : reader(conn)
+    ConnectionHandler(reddish::common::network::Connection& conn)
+        : conn(conn)
+        , reader(conn)
         , writer(conn)
     {
     }

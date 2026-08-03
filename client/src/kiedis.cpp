@@ -3,11 +3,21 @@
 
 
 namespace reddish {
-    common::utils::AsyncResult<common::protocol::KiedisSupportType> KiedisClient::get(std::string_view key){
-        auto commond = common::commands::Command<common::commands::CommandEnum::Get>::to_string(key);
+    common::utils::AsyncResult<common::protocol::RESPValue> KiedisClient::get(std::string_view key){
+        auto command = common::commands::Command<common::commands::CommandEnum::Get>::to_string(key);
 
+        auto written = co_await conn.write(command);
+        if (!written) {
+            co_return written.error();
+        }
 
-        co_return 0;
+        common::protocol::RESPReader reader(conn);
+        auto reply = co_await reader.read();
+        if (!reply) {
+            co_return reply.error();
+        }
+
+        co_return reply.value();
     }
 
 }

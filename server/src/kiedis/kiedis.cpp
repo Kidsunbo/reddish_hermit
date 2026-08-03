@@ -23,7 +23,7 @@ boost::asio::awaitable<void> KiedisServer::run()
             [](boost::asio::ip::tcp::socket socket) -> boost::asio::awaitable<void> {
                 auto ctx = co_await boost::asio::this_coro::executor;
                 reddish::common::network::Connection conn(ctx, std::move(socket));
-                ConnectionHandler handler{std::move(conn)};
+                ConnectionHandler handler{conn};
                 co_await handler.handle_connection();
                 co_return;
             }(std::move(socket)),

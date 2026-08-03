@@ -1,7 +1,9 @@
 #pragma once
 
-#include "common/network/connection.h"
-#include <boost/asio.hpp>
+#include <common/network/connection.h>
+#include <common/protocol/resp_value.h>
+#include <common/utils/types.h>
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -11,25 +13,25 @@ namespace reddish::common::protocol {
     class RESPWriter {
         network::Connection& conn;
 
-    private:
-        boost::asio::awaitable<std::int64_t> write(std::string);
-
     public:
         RESPWriter(network::Connection& conn)
             : conn(conn)
         {
         }
 
-        boost::asio::awaitable<std::int64_t> write_simple_string(std::string);
+        utils::AsyncResult<std::size_t> write(const RESPValue& value);
 
-        boost::asio::awaitable<std::int64_t> write_bulk_string(std::string);
+        utils::AsyncResult<std::size_t> write_simple_string(std::string value);
 
-        boost::asio::awaitable<std::int64_t> write_null_bulk_string();
+        utils::AsyncResult<std::size_t> write_bulk_string(std::string value);
 
-        boost::asio::awaitable<std::int64_t> write_array(std::vector<std::string>);
+        utils::AsyncResult<std::size_t> write_null_bulk_string();
 
-        boost::asio::awaitable<std::int64_t> write_error(std::string, std::string);
+        utils::AsyncResult<std::size_t> write_array(std::vector<std::string> value);
 
-        boost::asio::awaitable<std::int64_t> write_integer(std::int64_t);
+        utils::AsyncResult<std::size_t> write_error(std::string code, std::string message);
+
+        utils::AsyncResult<std::size_t> write_integer(std::int64_t value);
     };
+
 }

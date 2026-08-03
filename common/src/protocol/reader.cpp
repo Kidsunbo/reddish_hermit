@@ -1,106 +1,104 @@
-#include <boost/asio.hpp>
-#include <cctype>
+#include <boost/system/errc.hpp>
 #include <common/protocol/reader.h>
+#include <common/protocol/resp_value.h>
 #include <cstdint>
-#include <stdexcept>
 #include <string>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 namespace reddish::common::protocol {
 
-    boost::asio::awaitable<std::string> RESPReader::read_line()
+    utils::AsyncResult<std::string> RESPReader::read_line()
     {
-        auto content = co_await conn.read_until("\r\n");
-        if (!content) {
-            throw std::logic_error("failed to read any bytes from network");
-        }
-        co_return content.value();
+        co_return co_await conn.read_until("\r\n");
     }
 
-    boost::asio::awaitable<std::string> RESPReader::read_exact(std::int32_t size)
+    utils::AsyncResult<std::string> RESPReader::read_exact(std::uint64_t size)
     {
-        
-        auto result = co_await conn.read_exact(size);
-        if (!result) {
-            throw std::logic_error("failed to read desired amount of bytes from network");
-        }
-        co_return result.value();
+        co_return co_await conn.read_exact(size);
     }
 
-    boost::asio::awaitable<std::string> RESPReader::read_array_item()
+    utils::AsyncResult<RESPValue> RESPReader::read()
     {
-        auto line = co_await this->read_line();
-        switch (static_cast<RESPDataType>(line[0])) {
-        case RESPDataType::SimpleString:
-            co_return co_await this->read_simple_string(line);
-        case RESPDataType::Integer:
-            co_return std::to_string(co_await this->read_integer(line));
-        case RESPDataType::BulkString:
-            co_return co_await this->read_bulk_string(line);
+        auto line = co_await read_line();
+        if (!line) {
+            co_return line.error();
+        }
+
+        const std::string& text = line.value();
+        if (text.size() < 3 || text[text.size() - 2] != '\r' || text[text.size() - 1] != '\n') {
+            co_return boost::system::errc::protocol_error;
+        }
+
+        const auto type = resp2_type_from_prefix(text[0]);
+        if (!type) {
+            co_return boost::system::errc::protocol_error;
+        }
+
+        switch (*type) {
+        case RESP2Type::SimpleString: {
+            auto parsed = parse_simple_string(text);
+            if (!parsed) {
+                co_return parsed.error();
+            }
+            co_return parsed.value();
+        }
+        case RESP2Type::Error: {
+            auto parsed = parse_error(text);
+            if (!parsed) {
+                co_return parsed.error();
+            }
+            co_return parsed.value();
+        }
+        case RESP2Type::Integer: {
+            auto parsed = parse_integer(text);
+            if (!parsed) {
+                co_return parsed.error();
+            }
+            co_return parsed.value();
+        }
+        case RESP2Type::BulkString: {
+            auto parsed = parse_length(text);
+            if (!parsed) {
+                co_return parsed.error();
+            }
+            const std::int64_t length = parsed.value();
+            if (length == -1) {
+                co_return RESPValue::null();
+            }
+            auto payload = co_await read_exact(static_cast<std::uint64_t>(length) + 2);
+            if (!payload) {
+                co_return payload.error();
+            }
+            const std::string& bytes = payload.value();
+            if (bytes.size() < static_cast<std::size_t>(length) + 2 || bytes[bytes.size() - 2] != '\r'
+                || bytes[bytes.size() - 1] != '\n') {
+                co_return boost::system::errc::protocol_error;
+            }
+            co_return RESPValue::bulk_string(bytes.substr(0, static_cast<std::size_t>(length)));
+        }
+        case RESP2Type::Array: {
+            auto parsed = parse_length(text);
+            if (!parsed) {
+                co_return parsed.error();
+            }
+            const std::int64_t length = parsed.value();
+            if (length == -1) {
+                co_return RESPValue::null();
+            }
+            std::vector<RESPValue> items;
+            items.reserve(static_cast<std::size_t>(length));
+            for (std::int64_t i = 0; i < length; ++i) {
+                auto item = co_await read();
+                if (!item) {
+                    co_return item.error();
+                }
+                items.push_back(std::move(item).value());
+            }
+            co_return RESPValue::array(std::move(items));
+        }
         default:
-            throw std::logic_error("unknown array item type");
-        }
-    }
-
-    boost::asio::awaitable<std::vector<std::string>> RESPReader::read_array(std::string previous_line)
-    {
-        auto length = std::stoi(previous_line.substr(1, previous_line.length() - 2));
-        std::vector<std::string> result;
-        result.reserve(length);
-        for (auto i = 0; i < length; i++) {
-            result.push_back(co_await this->read_array_item());
-        }
-        co_return result;
-    }
-
-    boost::asio::awaitable<std::string> RESPReader::read_simple_string(std::string previous_line)
-    {
-        co_return previous_line.substr(1, previous_line.length() - 2);
-    }
-
-    boost::asio::awaitable<std::string> RESPReader::read_bulk_string(std::string previous_line)
-    {
-        auto length = std::stoi(previous_line.substr(1, previous_line.length() - 2));
-        auto line = co_await this->read_exact(length + 2);
-        co_return line.substr(0, length);
-    }
-
-    boost::asio::awaitable<std::tuple<std::string, std::string>> RESPReader::read_error(std::string previous_line)
-    {
-        auto idx = previous_line.find_first_of(' ');
-        co_return std::tuple { previous_line.substr(1, idx), previous_line.substr(idx + 1, previous_line.length() - 2) };
-    }
-
-    boost::asio::awaitable<std::int64_t> RESPReader::read_integer(std::string previous_line)
-    {
-        bool is_negative = previous_line[1] == '-';
-        if (std::isdigit(previous_line[1])) {
-            co_return std::stoll(previous_line.substr(1, previous_line.length() - 2));
-        } else {
-            co_return (is_negative ? -1 : 1) * std::stoll(previous_line.substr(2, previous_line.length() - 2));
-        }
-    }
-
-    boost::asio::awaitable<
-        std::tuple<std::variant<std::string, std::vector<std::string>, std::int64_t, std::tuple<std::string, std::string>>,
-            RESPDataType>>
-    RESPReader::read_request()
-    {
-        auto line = co_await this->read_line();
-        switch (static_cast<RESPDataType>(line[0])) {
-        case RESPDataType::SimpleString:
-            co_return std::tuple { co_await this->read_simple_string(line), RESPDataType::SimpleString };
-        case RESPDataType::Error:
-            co_return std::tuple { co_await this->read_error(line), RESPDataType::Error };
-        case RESPDataType::Integer:
-            co_return std::tuple { co_await this->read_integer(line), RESPDataType::Integer };
-        case RESPDataType::BulkString:
-            co_return std::tuple { co_await this->read_bulk_string(line), RESPDataType::BulkString };
-        case RESPDataType::Arrays:
-            co_return std::tuple { co_await this->read_array(line), RESPDataType::Arrays };
-        default:
-            throw std::logic_error("unknown request type");
+            co_return boost::system::errc::protocol_error;
         }
     }
 

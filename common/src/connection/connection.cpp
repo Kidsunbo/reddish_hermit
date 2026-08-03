@@ -90,7 +90,7 @@ namespace reddish::common::network {
 
         boost::system::error_code ec;
 
-        net::ip::address ip_address = net::ip::address::from_string(ip, ec);
+        net::ip::address ip_address = net::ip::make_address(ip, ec);
         if (ec) {
             co_return ec;
         }
