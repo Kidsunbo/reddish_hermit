@@ -74,11 +74,11 @@ namespace reddish::common::protocol {
 
     boost::asio::awaitable<std::int64_t> RESPReader::read_integer(std::string previous_line)
     {
-        bool is_negetive = previous_line[1] == '-';
+        bool is_negative = previous_line[1] == '-';
         if (std::isdigit(previous_line[1])) {
             co_return std::stoll(previous_line.substr(1, previous_line.length() - 2));
         } else {
-            co_return (is_negetive ? -1 : 1) * std::stoll(previous_line.substr(2, previous_line.length() - 2));
+            co_return (is_negative ? -1 : 1) * std::stoll(previous_line.substr(2, previous_line.length() - 2));
         }
     }
 

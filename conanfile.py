@@ -39,13 +39,13 @@ class ReddishHermitConan(ConanFile):
         cmake_layout(self)
 
     def requirements(self):
-        self.requires("boost/1.81.0")
+        self.requires("boost/1.91.0")
         if self.options.with_ssl:
-            self.requires("openssl/3.0.5")
+            self.requires("openssl/4.0.1")
 
     def build_requirements(self):
         if self.options.enable_test:
-            self.test_requires("gtest/cci.20210126")
+            self.test_requires("gtest/1.17.0")
 
     def _configurate(self, tc):
         tc.variables["WITH_SSL"] = self.options.with_ssl
