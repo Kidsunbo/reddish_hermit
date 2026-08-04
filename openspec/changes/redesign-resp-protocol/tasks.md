@@ -27,17 +27,17 @@
 
 ## 6. Tests
 
-- [ ] 6.1 Add `common/test/protocol/reader_test.cpp`: pure helpers across the type universe incl. `$-1`, `*-1`, `-ERR msg` code/message split, `:-123`, garbage and overflow → `protocol_error`
-- [ ] 6.2 Add `common/test/protocol/writer_test.cpp`: `encode()` byte-exactness for every type incl. empty/binary payloads and empty arrays
-- [ ] 6.3 Add `common/test/protocol/roundtrip_test.cpp`: `encode` → pure-parse → value equality across the universe
-- [ ] 6.4 Add a loopback socket fixture (one `io_context`, localhost listener + connect pair) and `loopback_test.cpp` exercising `RESPWriter.write()`/`RESPReader.read()` and `Connection` `read_until`/`read_exact`/`write`
-- [ ] 6.5 Rewrite `connection_test.cpp` as real gtest using the loopback fixture, removing external-host HTTP calls; register protocol tests in `common/test/CMakeLists.txt`
-- [ ] 6.6 Verify `ctest` runs all tests clean under ASan/`--coverage` with no warnings or leaks
+- [x] 6.1 Add `common/test/protocol/reader_test.cpp`: pure helpers across the type universe incl. `$-1`, `*-1`, `-ERR msg` code/message split, `:-123`, garbage and overflow → `protocol_error`
+- [x] 6.2 Add `common/test/protocol/writer_test.cpp`: `encode()` byte-exactness for every type incl. empty/binary payloads and empty arrays
+- [x] 6.3 Add `common/test/protocol/roundtrip_test.cpp`: `encode` → pure-parse → value equality across the universe
+- [x] 6.4 Add a loopback socket fixture (one `io_context`, localhost listener + connect pair) and `loopback_test.cpp` exercising `RESPWriter.write()`/`RESPReader.read()` and `Connection` `read_until`/`read_exact`/`write`
+- [x] 6.5 Rewrite `connection_test.cpp` as real gtest using the loopback fixture, removing external-host HTTP calls; register protocol tests in `common/test/CMakeLists.txt`
+- [x] 6.6 Verify `ctest` runs all tests clean under ASan/`--coverage` with no warnings or leaks
 
 ## 7. Build and validation
 
-- [ ] 7.1 Full Debug build via `script/build_server.sh`/`script/build_client.sh` (or conan presets); fix `-Werror`/sanitizer issues
-- [ ] 7.2 Run the full test suite (`ctest --preset conan-debug`) and confirm every spec scenario is exercised
-- [ ] 7.3 Run `openspec validate --change redesign-resp-protocol`
+- [x] 7.1 Full Debug build via `script/build_server.sh`/`script/build_client.sh` (or conan presets); fix `-Werror`/sanitizer issues
+- [x] 7.2 Run the full test suite (`ctest --preset conan-debug`) and confirm every spec scenario is exercised
+- [x] 7.3 Run `openspec validate --change redesign-resp-protocol`
 
 Note: a reply-size-limit guard (`proto-max-bulk-len`-style) is intentionally deferred — it is the design's Open Question and does not change this task breakdown or the API shape.

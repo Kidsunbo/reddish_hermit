@@ -1,107 +1,221 @@
-#include <common/network/connection.h>
-#include <iostream>
-
-#include <boost/regex.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
-using namespace boost::asio::experimental::awaitable_operators;
+#include <common/network/connection.h>
+#include <gtest/gtest.h>
+#include <protocol/loopback_fixture.h>
 
-using namespace reddish::common::network;
+#include <cstdint>
+#include <string>
+#include <utility>
 
-boost::asio::awaitable<std::string> get(Connection &conn, std::string_view host)
-{
+namespace reddish::common::network {
+namespace {
 
-    auto v = co_await conn.connect_with_host_name(host, 80);
-    if (!v)
-    {
-        std::cout <<"failed to parse host: "<<  v.error().message() << std::endl;
-        co_return "";
-    }
-    std::cout <<"IP address: "<< v.value() << std::endl;
+    using namespace boost::asio::experimental::awaitable_operators;
+    using reddish::common::protocol::test::LoopbackPair;
 
-    auto ve = co_await conn.write("GET / HTTP/1.1\r\n\r\n");
-    if (!ve)
-    {
-        std::cout <<"Failed to request: "<<  ve.error().message() << std::endl;
-        co_return "";
-    }
-    std::cout << "Write request with "<< ve.value()<<" bytes" << std::endl;
-
-    auto content = co_await conn.read_until("\r\n\r\n");
-    if (!content)
-    {
-        std::cout << "Failed to read response " <<content.error() << std::endl;
-        co_return "";
-    }
-    std::cout << "Read response with "<< content.value().length() <<" bytes" << std::endl;
-
-    std::size_t total_size = 0;
-    boost::regex re("Content-Length: ([0-9]+)");
-    boost::smatch what;
-    if (boost::regex_search(content.value(), what, re))
-    {
-        total_size = std::stoi(what[1]);
-    }
-    else
-    {
-        std::cout << "Failed to parse Content-Length" << std::endl;
-        co_return "";
-    }
-    std::string result = content.value();
-
-    content = co_await conn.read_exact(total_size);
-    if (!content)
-    {
-        std::cout << "Failed to read body "<< content.error() << std::endl;
-        co_return "";
-    }
-    std::cout <<"Read body with "<< content.value().length() <<" bytes" << std::endl;
-    result.append(content.value());
-    co_return result;
-}
-
-boost::asio::awaitable<void> co_main_http()
-{
-    auto any_ctx = co_await boost::asio::this_coro::executor;
-    Connection conn(any_ctx, 5);
-    
-    std::vector<std::string> vec = {
-        "github.com",
-        "www.baidu.com",
-        "www.google.com",
-        "www.youtube.com",
-        "www.163.com",
+    struct Captured {
+        std::string error;
+        bool ok { false };
     };
-    for(auto& item : vec){
-        auto s = co_await get(conn, item);
-        std::ignore = conn.close();
-        std::cout<<item<<std::endl<<s<<std::endl;
-    }
-}
 
-boost::asio::awaitable<void> co_main(){
-    auto ctx = co_await boost::asio::this_coro::executor;
-    Connection conn(ctx, 5);
-    if(auto result = co_await conn.connect_with_host_name("host.docker.internal", 6379); result.has_error()){
-        std::cerr<<"connect: "<<result.error()<<std::endl;
-        co_return;
+    template <typename Result>
+    bool fail(Captured& out, const Result& result, const char* message)
+    {
+        if (result) {
+            return false;
+        }
+        out.error = std::string(message) + result.error().message();
+        return true;
     }
-    if(auto result = co_await conn.write("*1\r\n$7\r\nCOMMAND\r\n"); result.has_error()){
-        std::cerr<<"write: "<<result.error()<<std::endl;
-        co_return;
-    }
-    auto content = co_await conn.read_until("\r\n");
-    if(!content){
-        std::cout<<content.error().message()<<std::endl;
-        co_return;
-    }
-    std::cout<<"Return Value "<<content.value().length()<<"\n"<<content.value()<<std::endl;
-}
 
-int main()
-{
-    boost::asio::io_context ctx;
-    boost::asio::co_spawn(ctx, co_main_http(), boost::asio::detached);
-    // boost::asio::co_spawn(ctx, co_main(), boost::asio::detached);
-    ctx.run();
-    return 0;
+    boost::asio::awaitable<void> write_and_read_back(LoopbackPair& pair, Captured& out)
+    {
+        auto written = co_await (*pair.client).write("ping");
+        if (fail(out, written, "write failed: ")) {
+            co_return;
+        }
+        auto echoed = co_await (*pair.server).read_exact(4);
+        if (fail(out, echoed, "read_exact failed: ")) {
+            co_return;
+        }
+        if (echoed.value() != "ping") {
+            out.error = "echo mismatch";
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    boost::asio::awaitable<void> read_until_multiple_messages(LoopbackPair& pair, Captured& out)
+    {
+        auto written = co_await (*pair.client).write("line1\r\nline2\r\n");
+        if (fail(out, written, "write failed: ")) {
+            co_return;
+        }
+        auto first = co_await (*pair.server).read_until("\r\n");
+        if (fail(out, first, "read_until failed: ")) {
+            co_return;
+        }
+        if (first.value() != "line1\r\n") {
+            out.error = "first line mismatch";
+            co_return;
+        }
+        auto second = co_await (*pair.server).read_until("\r\n");
+        if (fail(out, second, "read_until failed: ")) {
+            co_return;
+        }
+        if (second.value() != "line2\r\n") {
+            out.error = "second line mismatch";
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    boost::asio::awaitable<void> read_exact_across_chunks(LoopbackPair& pair, Captured& out)
+    {
+        auto written = co_await (*pair.client).write("abcdef");
+        if (fail(out, written, "write failed: ")) {
+            co_return;
+        }
+        auto first = co_await (*pair.server).read_exact(2);
+        if (fail(out, first, "read_exact failed: ")) {
+            co_return;
+        }
+        if (first.value() != "ab") {
+            out.error = "first chunk mismatch";
+            co_return;
+        }
+        auto rest = co_await (*pair.server).read_exact(4);
+        if (fail(out, rest, "read_exact failed: ")) {
+            co_return;
+        }
+        if (rest.value() != "cdef") {
+            out.error = "rest chunk mismatch";
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    boost::asio::awaitable<void> read_until_then_exact(LoopbackPair& pair, Captured& out)
+    {
+        auto written = co_await (*pair.client).write("$3\r\nfoo\r\n");
+        if (fail(out, written, "write failed: ")) {
+            co_return;
+        }
+        auto header = co_await (*pair.server).read_until("\r\n");
+        if (fail(out, header, "read_until failed: ")) {
+            co_return;
+        }
+        if (header.value() != "$3\r\n") {
+            out.error = "header mismatch";
+            co_return;
+        }
+        auto payload = co_await (*pair.server).read_exact(3);
+        if (fail(out, payload, "read_exact failed: ")) {
+            co_return;
+        }
+        if (payload.value() != "foo") {
+            out.error = "payload mismatch";
+            co_return;
+        }
+        auto crlf = co_await (*pair.server).read_exact(2);
+        if (fail(out, crlf, "read_exact failed: ")) {
+            co_return;
+        }
+        if (crlf.value() != "\r\n") {
+            out.error = "trailer mismatch";
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    boost::asio::awaitable<void> peer_close_yields_eof(LoopbackPair& pair, Captured& out)
+    {
+        boost::system::error_code close_ec = (*pair.client).close();
+        if (close_ec) {
+            out.error = "close failed: " + close_ec.message();
+            co_return;
+        }
+        auto result = co_await (*pair.server).read_until("\r\n");
+        if (result) {
+            out.error = "expected EOF got data";
+            co_return;
+        }
+        if (result.error() != boost::asio::error::eof
+            && result.error() != boost::asio::error::connection_reset) {
+            out.error = "unexpected error: " + result.error().message();
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    boost::asio::awaitable<void> write_empty(LoopbackPair& pair, Captured& out)
+    {
+        auto written = co_await (*pair.client).write("");
+        if (fail(out, written, "write failed: ")) {
+            co_return;
+        }
+        if (written.value() != 0u) {
+            out.error = "expected zero bytes written";
+            co_return;
+        }
+        out.ok = true;
+    }
+
+    void run_io(LoopbackPair& pair, boost::asio::awaitable<void> coro)
+    {
+        boost::asio::co_spawn(pair.ctx, std::move(coro), boost::asio::detached);
+        pair.ctx.run();
+    }
+
+    TEST(Connection, WriteAndReadBack)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, write_and_read_back(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+    TEST(Connection, ReadUntilMultipleMessages)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, read_until_multiple_messages(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+    TEST(Connection, ReadExactAcrossChunks)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, read_exact_across_chunks(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+    TEST(Connection, ReadUntilThenExact)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, read_until_then_exact(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+    TEST(Connection, PeerCloseYieldsEof)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, peer_close_yields_eof(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+    TEST(Connection, WriteEmpty)
+    {
+        LoopbackPair pair;
+        Captured out;
+        run_io(pair, write_empty(pair, out));
+        ASSERT_TRUE(out.ok) << out.error;
+    }
+
+}
 }
